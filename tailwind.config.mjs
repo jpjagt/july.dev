@@ -5,7 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["'Rubik', sans-serif"],
-        }
+      }
     },
   },
   plugins: [],
