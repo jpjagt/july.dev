@@ -2,11 +2,12 @@
 export interface Props {
   name: string
   start: number
+  url?: string | null
   img?: string
   end?: number | string | null
 }
 
-const { name, url, img, start, end = null } = Astro.props
+const { name, url = null, img, start, end = null } = Astro.props
 ---
 
 <div class="relative">
