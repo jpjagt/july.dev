@@ -1,0 +1,125 @@
+---
+import { promises as fs } from 'fs'
+import path from 'path'
+
+const trackList = [
+  'periodic signals',
+  'three days',
+  'make me see',
+  'bleached',
+  'clay',
+  'no pasa nada',
+  "they won't hurt",
+  'pomegranate',
+  'lullaby for angels',
+  'fallen angels',
+  'not your heart to break',
+  'a thousand planes in the sky',
+  'everything flows',
+  'hold me close for one more time',
+]
+
+const lyricsPath = path.join(process.cwd(), 'src', 'lyrics')
+
+const lyrics = await Promise.all(
+  trackList.map(async (track) => {
+    const filePath = path.join(lyricsPath, track + '.txt')
+    const content = await fs.readFile(filePath, 'utf-8')
+    return {
+      title: track.trim(),
+      text: content.trim(),
+    }
+  }),
+)
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>lyrics for pomegranate</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
+    >
+      <div class="px-4 mx-auto sm:max-w-xl md:max-w-4xl">
+        <div
+          x-data={`{
+                 lyrics: ${JSON.stringify(lyrics)},
+                 activeTrack: ${JSON.stringify(lyrics[0])},
+                 formatLyrics: (text) => {
+                 return text.split('\\n').join('<br>')
+                 }
+                 }`}
+          x-cloak
+          class="font-rubik"
+        >
+          <div class="flex flex-col md:flex-row">
+            <div
+              class="md:w-96 md:pr-6 md:sticky pt-16 md:pt-0 md:top-32 md:self-start"
+            >
+              <h2 class="text-lg font-bold mb-4">pomegranate</h2>
+              <ul>
+                <template x-for="(track, index) in lyrics">
+                  <li
+                    class="cursor-pointer mb-2"
+                    :class="{ 'font-bold': activeTrack.title === track.title }"
+                    x-on:click="activeTrack = track; $nextTick(() => document.getElementById('lyrics-title').scrollIntoView({behavior: 'smooth'}))"
+                    x-text="`${(index + 1) < 10 ? '0' : ''}${index + 1}` + '. ' + track.title"
+                  >
+                  </li>
+                </template>
+              </ul>
+            </div>
+
+            <!-- Lyrics display -->
+            <div class="md:w-2/3">
+              <h2
+                id="lyrics-title"
+                class="text-lg font-bold mb-4 pt-12 md:pt-32"
+                x-text="activeTrack.title"
+              >
+              </h2>
+              <div
+                class="whitespace-pre-wrap break-words"
+                x-html="formatLyrics(activeTrack.text)"
+              >
+              </div>
+
+              <div class="md:hidden mt-8">
+                <template
+                  x-if="lyrics.indexOf(activeTrack) < lyrics.length - 1"
+                >
+                  <p
+                    class="cursor-pointer underline"
+                    x-text="'Next: ' + lyrics[lyrics.indexOf(activeTrack) + 1].title"
+                    x-on:click="activeTrack = lyrics[lyrics.indexOf(activeTrack) + 1]; $nextTick(() => document.getElementById('lyrics-title').scrollIntoView({behavior: 'smooth'}))"
+                  >
+                  </p>
+                </template>
+              </div>
+
+              <div class="h-32 sm:h-32"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
