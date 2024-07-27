@@ -14,7 +14,7 @@ const { name, url = null, img, start, end = null } = Astro.props
   {img && <img src={`/images/projects/${img}`} class="md:mb-4 rounded-2xl" />}
 
   <div
-    class={`${img ? 'md:absolute' : ''} bottom-3 right-3 left-3 rounded-2xl md:bg-white px-5 py-4 md:px-8 md:py-6`}
+    class={`${img ? 'md:absolute' : ''} bottom-3 right-3 left-3 rounded-2xl md:bg-white dark:md:bg-gray-800 px-5 py-4 md:px-8 md:py-6`}
   >
     <div class="flex items-center justify-between mb-4">
       <h4
