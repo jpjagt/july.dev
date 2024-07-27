@@ -40,7 +40,9 @@ const lyrics = await Promise.all(
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
 
-    <title>lyrics for pomegranate</title>
+    <title>pomegranate</title>
+    <meta name="description" content="an album by july" />
+    <meta property="og:image" content="/images/pomegranate.jpg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -74,6 +76,10 @@ const lyrics = await Promise.all(
             <div
               class="md:w-96 md:pr-6 md:sticky pt-16 md:pt-0 md:top-32 md:self-start"
             >
+              <img
+                src="/images/pomegranate.jpg"
+                class="rounded-lg w-40 max-w-full h-auto mb-4 shadow hidden"
+              />
               <h2 class="text-lg font-semibold mb-1">pomegranate</h2>
               <p class="mb-6 text-sm opacity-60">
                 <a
