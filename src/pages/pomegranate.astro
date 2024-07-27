@@ -75,14 +75,14 @@ const lyrics = await Promise.all(
               class="md:w-96 md:pr-6 md:sticky pt-16 md:pt-0 md:top-32 md:self-start"
             >
               <h2 class="text-lg font-semibold mb-1">pomegranate</h2>
-              <p class="mb-6 text-sm opacity-80">
+              <p class="mb-6 text-sm opacity-60">
                 <a
                   href="https://untitled.stream/library/project/8G8lPRawq24Tfas-D_ssY"
                   class="underline text-inherit hover:no-underline"
                   target="_blank">listen</a
                 >
               </p>
-              <ul>
+              <ul class="opacity-70">
                 <template x-for="(track, index) in lyrics">
                   <li
                     class="cursor-pointer mb-2"
@@ -114,7 +114,7 @@ const lyrics = await Promise.all(
                   x-if="lyrics.indexOf(activeTrack) < lyrics.length - 1"
                 >
                   <p
-                    class="cursor-pointer underline"
+                    class="cursor-pointer underline opacity-70"
                     x-text="'Next: ' + lyrics[lyrics.indexOf(activeTrack) + 1].title"
                     x-on:click="activeTrack = lyrics[lyrics.indexOf(activeTrack) + 1]; $nextTick(() => document.getElementById('lyrics-title').scrollIntoView({behavior: 'smooth'}))"
                   >
