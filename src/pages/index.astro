@@ -19,8 +19,10 @@ import { ProjectPreview } from '@/components'
     />
   </head>
   <body>
-    <div class="bg-gray-100">
-      <div class="px-4 mx-auto text-gray-600 sm:max-w-xl md:max-w-3xl">
+    <div
+      class="bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
+    >
+      <div class="px-4 mx-auto sm:max-w-xl md:max-w-3xl">
         <div class="h-32 sm:h-32"></div>
 
         <div class="w-full">
@@ -34,7 +36,7 @@ import { ProjectPreview } from '@/components'
         <div class="h-12"></div>
 
         <div class="flex flex-col sm:flex-row sm:items-center">
-          <h1 class="font-bold text-black">july jagt</h1><span
+          <h1 class="font-bold text-black dark:text-white">july jagt</h1><span
             class="mx-2 hidden sm:inline-block">&bull;</span
           >
           <h2>
@@ -150,14 +152,12 @@ import { ProjectPreview } from '@/components'
         <h3 class="header">contact</h3>
 
         <p>
-          email: <a href="mailto:jpjagt@pm.me" class="underline text-gray-600"
-            >jpjagt@pm.me</a
+          email: <a href="mailto:jpjagt@pm.me" class="underline">jpjagt@pm.me</a
           >
         </p>
         <p>
-          twitter: <a
-            href="https://twitter.com/jpjagt"
-            class="underline text-gray-600">@jpjagt</a
+          twitter: <a href="https://twitter.com/jpjagt" class="underline"
+            >@jpjagt</a
           >
         </p>
         <div class="h-32"></div>
@@ -168,10 +168,10 @@ import { ProjectPreview } from '@/components'
 
 <style>
   .header {
-    @apply font-bold mt-10 mb-6 text-black;
+    @apply font-bold mt-10 mb-6 text-black dark:text-white;
   }
 
   a {
-    @apply underline;
+    @apply underline text-inherit;
   }
 </style>
