@@ -1,5 +1,6 @@
 ---
 import { ProjectPreview } from '@/components'
+import '@/globals.css'
 ---
 
 <html lang="en">
@@ -13,35 +14,39 @@ import { ProjectPreview } from '@/components'
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
+    <div class="blur" aria-hidden="true"></div>
     <div
-      class="bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
+      class="bg-white text-gray-500 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
     >
-      <div class="px-4 mx-auto sm:max-w-xl md:max-w-3xl">
-        <div class="h-32 sm:h-32"></div>
+      <div class="px-4 mx-auto sm:max-w-xl md:max-w-2xl">
+        <div class="h-8 sm:h-32"></div>
 
-        <div class="w-full">
+        <div class="w-full flex justify-end sm:justify-start pr-4 -ml-1.5">
           <img
             src="/images/july.jpg"
-            alt="an image of me, july"
-            class="w-48 h-48 rounded-2xl inline-block"
+            alt="an image of july!"
+            class="w-32 h-32 rounded-2xl inline-block p-1.5 bg-white dark:bg-gray-800 border dark:border-gray-900"
           />
         </div>
 
-        <div class="h-12"></div>
+        <div class="sm:h-12"></div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center">
-          <h1 class="font-bold text-black dark:text-white">july jagt</h1><span
-            class="mx-2 hidden sm:inline-block">&bull;</span
-          >
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+          <h1 class="font-semibold text-black dark:text-white text-lg">
+            july jagt
+          </h1><span class="mx-2 hidden sm:inline-block">&bull;</span>
           <h2>
             fullstack dev, data engineer, making &#123; ui's, lamps, jewelry, <a
-              href="/pomegranate">music</a
+              href="/pomegranate"
+              class="link">music</a
             >
             &#125;
           </h2>
@@ -58,9 +63,36 @@ import { ProjectPreview } from '@/components'
           improve, and give back to the world.
         </p>
 
+        <div class="h-6"></div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+          <p>
+            <span class="font-semibold mr-2 sm:mr-1">mail</span>
+            <a href="mailto:jpjagt@pm.me" class="link">jpjagt@pm.me</a>
+          </p>
+
+          <span class="mx-6 hidden sm:inline-block">&bull;</span>
+
+          <p>
+            <span class="font-semibold mr-2 sm:mr-1">x</span><a
+              href="https://twitter.com/julymemo"
+              class="link">@julymemo</a
+            >
+          </p>
+
+          <span class="mx-6 hidden sm:inline-block">&bull;</span>
+
+          <p>
+            <span class="font-semibold mr-2 sm:mr-1">github</span><a
+              href="https://twitter.com/jpjagt"
+              class="link">@jpjagt</a
+            >
+          </p>
+        </div>
+
         <h3 class="header">projects</h3>
 
-        <div class="space-y-8">
+        <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
           <ProjectPreview
             name="thescraperfactory"
             url="https://thescraperfactory.com"
@@ -68,9 +100,11 @@ import { ProjectPreview } from '@/components'
             start={2024}
             end="now"
           >
-            Building LLM-powered web scraper factories, automating the process
-            of data extraction from the web, with <a href="https://lodder.dev"
-              >Paul Lodder</a
+            Building LLM-powered <span class="hilite"
+              >web scraper factories</span
+            >, automating the process of data extraction from the web, with <a
+              href="https://lodder.dev"
+              class="link">Paul Lodder</a
             >.
           </ProjectPreview>
 
@@ -81,16 +115,19 @@ import { ProjectPreview } from '@/components'
             start={2023}
           >
             An effort to improve accessibility to election programs for the 2023
-            Dutch Elections by making them easily and semantically searchable in
-            multiple languages using AI. Media coverage: <a
+            Dutch Elections by building <span class="hilite"
+              >semantic search</span
+            > over their contents, in <span class="hilite"
+              >multiple languages</span
+            >. Media coverage: <a
               href="https://nos.nl/collectie/13958/artikel/2498580-partijprogramma-s-makkelijker-te-begrijpen-dankzij-nieuwe-site"
-              >NOS</a
+              class="link">NOS</a
             > & <a
               href="https://www.at5.nl/artikelen/223568/verkiezingsprogrammas-begrijpelijker-maken-met-kunstmatige-intelligentie"
-              >AT5</a
-            >. With <a href="https://khaledtamimy.nl/">Khaled Tamimy</a> & <a
-              href="https://lodder.dev">Paul Lodder</a
-            >.
+              class="link">AT5</a
+            >. With <a href="https://khaledtamimy.nl/" class="link"
+              >Khaled Tamimy</a
+            > & <a href="https://lodder.dev" class="link">Paul Lodder</a>.
           </ProjectPreview>
 
           <ProjectPreview
@@ -98,10 +135,12 @@ import { ProjectPreview } from '@/components'
             url="https://zonopjebakkes.nl"
             start={2022}
           >
-            Frontend development for a webapp showing which terraces are in the
-            sun near you throughout the Netherlands, with <a
-              href="https://lodder.dev">Paul Lodder</a
-            > & <a href="https://www.robschilder.com/">Rob Schilder</a>.
+            <span class="hilite">Frontend development</span> for a webapp showing
+            which terraces are in the sun near you throughout the Netherlands, with
+            <a href="https://lodder.dev" class="link">Paul Lodder</a> & <a
+              href="https://www.robschilder.com/"
+              class="link">Rob Schilder</a
+            >.
           </ProjectPreview>
 
           <ProjectPreview
@@ -110,9 +149,10 @@ import { ProjectPreview } from '@/components'
             start={2020}
             end={2024}
           >
-            Data engineering and full-stack web dev for a startup designing
-            scalable software to have creators gain insight and control of their
-            royalty income.
+            <span class="hilite">Data engineering</span> and <span
+              class="hilite">full-stack web dev</span
+            > for a startup designing scalable software to have creators gain insight
+            and control of their royalty income.
           </ProjectPreview>
 
           <ProjectPreview
@@ -121,19 +161,20 @@ import { ProjectPreview } from '@/components'
             start={2019}
             end={2020}
           >
-            Full-stack web development for a carbon footprint reduction service
-            with the mission of accelerating a cultural shift to fight back
-            against climate change.
+            <span class="hilite">Full-stack web dev</span> for a carbon footprint
+            reduction service with the mission of accelerating a cultural shift to
+            fight back against climate change.
           </ProjectPreview>
 
           <ProjectPreview
             name="pochola gum"
-            url="https://pocho.la"
             img="pochola.png"
             start={2021}
             end="now"
           >
-            Designing and producing jewelry of polymer clay and aluminium.
+            <span class="hilite">Designing</span> and <span class="hilite"
+              >producing</span
+            > jewelry of polymer clay and aluminium.
           </ProjectPreview>
 
           <ProjectPreview
@@ -142,24 +183,12 @@ import { ProjectPreview } from '@/components'
             img="primavera-si-y-sin.jpg"
             start={2022}
           >
-            I took pictures during the primavera festival in Barcelona and
-            recreated those photos in the same spots half a year later. This
-            website was a proposal to the organisers of the primavera festival
-            to feature the project in the next edition.
+            I took <span class="hilite">pictures</span> during the primavera festival
+            in Barcelona and recreated those photos in the same spots half a year
+            later. This website was a proposal to the organisers of the primavera
+            festival to feature the project in the next edition.
           </ProjectPreview>
         </div>
-
-        <h3 class="header">contact</h3>
-
-        <p>
-          email: <a href="mailto:jpjagt@pm.me" class="underline">jpjagt@pm.me</a
-          >
-        </p>
-        <p>
-          twitter: <a href="https://twitter.com/jpjagt" class="underline"
-            >@jpjagt</a
-          >
-        </p>
         <div class="h-32"></div>
       </div>
     </div>
@@ -168,10 +197,6 @@ import { ProjectPreview } from '@/components'
 
 <style>
   .header {
-    @apply font-bold mt-10 mb-6 text-black dark:text-white;
-  }
-
-  a {
-    @apply underline text-inherit;
+    @apply font-semibold text-lg mt-20 mb-6 text-black dark:text-white;
   }
 </style>

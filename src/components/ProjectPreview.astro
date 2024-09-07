@@ -11,20 +11,22 @@ const { name, url = null, img, start, end = null } = Astro.props
 ---
 
 <div class="relative">
-  {img && <img src={`/images/projects/${img}`} class="md:mb-4 rounded-2xl" />}
-
-  <div
-    class={`${img ? 'md:absolute' : ''} bottom-3 right-3 left-3 rounded-2xl md:bg-white dark:md:bg-gray-800 px-5 py-4 md:px-8 md:py-6`}
-  >
-    <div class="flex items-center justify-between mb-4">
-      <h4
-        class={`font-bold ${url ? 'underline' : ''} text-black dark:text-white`}
-      >
-        {url ? <a href={url}>{name}</a> : name}
-      </h4>
-      <p class="text-black dark:text-white">{start}{end ? `—${end}` : ''}</p>
-    </div>
-
-    <p><slot /></p>
+  <div class="flex items-center justify-between mb-1">
+    <h4
+      class={`font-semibold ${url ? 'underline hover:no-underline' : ''} text-gray-700 dark:text-white`}
+    >
+      {
+        url ? (
+          <a href={url} class="link">
+            {name}
+          </a>
+        ) : (
+          name
+        )
+      }
+    </h4>
+    <p class="font-mono text-sm">{start}{end ? `—${end}` : ''}</p>
   </div>
+
+  <p><slot /></p>
 </div>
