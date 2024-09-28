@@ -15,6 +15,7 @@ const trackList = [
   'fallen angels',
   'not your heart to break',
   'a thousand planes in the sky',
+  'little star',
   'everything flows',
   'hold me close for one more time',
 ]
@@ -67,6 +68,16 @@ const lyrics = await Promise.all(
                  activeTrack: ${JSON.stringify(lyrics[0])},
                  formatLyrics: (text) => {
                  return text.split('\\n').join('<br>')
+                 },
+                 findTrackByName(name) {
+                 return this.lyrics.find(track => track.title.toLowerCase() === name.toLowerCase()) || this.lyrics[0]
+                 }
+                 }`}
+          x-init={`() => {
+                 const hash = decodeURIComponent(window.location.hash.slice(1));
+                 console.log({hash})
+                 if (hash) {
+                 activeTrack = findTrackByName(hash);
                  }
                  }`}
           x-cloak
