@@ -1,222 +1,210 @@
 ---
 import { ProjectPreview } from '@/components'
-import '@/globals.css'
+import Main from '@/layouts/main.astro'
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="manifest" href="/site.webmanifest" />
+<Main>
+  <div class="h-8 sm:h-32"></div>
 
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-
-    <title>july jagt - fullstack dev & data engineer</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
-      rel="stylesheet"
+  <div class="w-full flex justify-end sm:justify-start pr-4 -ml-1.5">
+    <img
+      src="/images/july.jpg"
+      alt="an image of july!"
+      class="w-32 h-32 rounded-2xl inline-block p-1.5 bg-white dark:bg-gray-800 border dark:border-gray-900"
     />
-  </head>
-  <body>
-    <div class="blur" aria-hidden="true"></div>
-    <div
-      class="bg-white text-gray-500 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
+  </div>
+
+  <div class="sm:h-12"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+    <h1 class="font-semibold text-black dark:text-white text-lg">
+      july jagt
+    </h1><span class="mx-2 hidden sm:inline-block">&bull;</span>
+    <h2>
+      fullstack dev, data engineer, making &#123; ui's, lamps, jewelry, <a
+        href="/pomegranate"
+        class="link">music</a
+      >
+      &#125;
+    </h2>
+  </div>
+
+  <div class="h-6"></div>
+
+  <div class="space-y-4">
+    <div class="space-y-0">
+      <p class="font-semibold">about</p>
+      <p>
+        My goal in life is to help society and the natural world be the best
+        version of itself by designing beautiful systems at the right level of
+        complexity.
+      </p>
+    </div>
+
+    <div class="space-y-0">
+      <p class="font-semibold">i do</p>
+      <p>
+        I love to <span>code</span>, to be <span>creative</span>, and to work
+        with
+        <span>passionate and intelligent people</span>.
+      </p>
+    </div>
+    <div class="space-y-0">
+      <p class="font-semibold">motivation</p>
+      <p>
+        Throughout my life, I have felt a deep caring, an intention of goodness,
+        and an eagerness to learn, improve, and give back to the world.
+      </p>
+    </div>
+  </div>
+
+  <div class="h-6"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+    <p>
+      <span class="font-semibold mr-2 sm:mr-1">mail</span>
+      <a href="mailto:jpjagt@pm.me" class="link">jpjagt@pm.me</a>
+    </p>
+
+    <span class="mx-6 hidden sm:inline-block">&bull;</span>
+
+    <p>
+      <span class="font-semibold mr-2 sm:mr-1">x</span><a
+        href="https://twitter.com/julymemo"
+        class="link">@julymemo</a
+      >
+    </p>
+
+    <span class="mx-6 hidden sm:inline-block">&bull;</span>
+
+    <p>
+      <span class="font-semibold mr-2 sm:mr-1">github</span><a
+        href="https://twitter.com/jpjagt"
+        class="link">@jpjagt</a
+      >
+    </p>
+  </div>
+
+  <h3 class="header">projects</h3>
+
+  <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
+    <ProjectPreview
+      name="Social Technology Lab"
+      url="https://socialtechnologylab.com"
+      start={2024}
+      end="now"
     >
-      <div class="px-4 mx-auto sm:max-w-xl md:max-w-2xl">
-        <div class="h-8 sm:h-32"></div>
+      We are changemakers who believe that technology needs to be applied
+      socially and ethically. We build technological applications in a
+      thoughtful, selective, and human-centred way.
+    </ProjectPreview>
 
-        <div class="w-full flex justify-end sm:justify-start pr-4 -ml-1.5">
-          <img
-            src="/images/july.jpg"
-            alt="an image of july!"
-            class="w-32 h-32 rounded-2xl inline-block p-1.5 bg-white dark:bg-gray-800 border dark:border-gray-900"
-          />
-        </div>
+    <ProjectPreview
+      name="thescraperfactory"
+      url="https://thescraperfactory.com"
+      img="thescraperfactory.jpg"
+      start={2024}
+    >
+      Building LLM-powered <span class="hilite">web scraper factories</span>,
+      automating the process of data extraction from the web, with <a
+        href="https://lodder.dev"
+        class="link">Paul Lodder</a
+      >.
+    </ProjectPreview>
 
-        <div class="sm:h-12"></div>
+    <ProjectPreview
+      name="partijplein.nl"
+      url="https://partijplein.nl"
+      img="partijplein.png"
+      start={2023}
+    >
+      An effort to improve accessibility to election programs for the 2023 Dutch
+      Elections by building <span class="hilite">semantic search</span> over their
+      contents, in <span class="hilite">multiple languages</span>. Media
+      coverage: <a
+        href="https://nos.nl/collectie/13958/artikel/2498580-partijprogramma-s-makkelijker-te-begrijpen-dankzij-nieuwe-site"
+        class="link">NOS</a
+      > & <a
+        href="https://www.at5.nl/artikelen/223568/verkiezingsprogrammas-begrijpelijker-maken-met-kunstmatige-intelligentie"
+        class="link">AT5</a
+      >. With <a href="https://khaledtamimy.nl/" class="link">Khaled Tamimy</a> &
+      <a href="https://lodder.dev" class="link">Paul Lodder</a>.
+    </ProjectPreview>
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
-          <h1 class="font-semibold text-black dark:text-white text-lg">
-            july jagt
-          </h1><span class="mx-2 hidden sm:inline-block">&bull;</span>
-          <h2>
-            fullstack dev, data engineer, making &#123; ui's, lamps, jewelry, <a
-              href="/pomegranate"
-              class="link">music</a
-            >
-            &#125;
-          </h2>
-        </div>
+    <ProjectPreview
+      name="zonopjebakkes.nl"
+      url="https://zonopjebakkes.nl"
+      start={2022}
+    >
+      <span class="hilite">Frontend development</span> for a webapp showing which
+      terraces are in the sun near you throughout the Netherlands, with
+      <a href="https://lodder.dev" class="link">Paul Lodder</a> & <a
+        href="https://www.robschilder.com/"
+        class="link">Rob Schilder</a
+      >.
+    </ProjectPreview>
 
-        <div class="h-6"></div>
+    <ProjectPreview
+      name="FXR"
+      url="https://fxr-insights.com"
+      start={2020}
+      end={2024}
+    >
+      <span class="hilite">Data engineering</span> and <span class="hilite"
+        >full-stack web dev</span
+      > for a startup designing scalable software to have creators gain insight and
+      control of their royalty income.
+    </ProjectPreview>
 
-        <p>
-          My goal in life is to help society and the natural world be the best
-          version of itself by designing beautiful systems at the right level of
-          complexity. I truly love to code, to be creative, and to work with
-          passionate and intelligent people. Throughout my life, I have felt a
-          deep caring, an intention of goodness, and an eagerness to learn,
-          improve, and give back to the world.
-        </p>
+    <ProjectPreview
+      name="Generation NOW"
+      img="generation-now.jpg"
+      start={2019}
+      end={2020}
+    >
+      <span class="hilite">Full-stack web dev</span> for a carbon footprint reduction
+      service with the mission of accelerating a cultural shift to fight back against
+      climate change.
+    </ProjectPreview>
 
-        <div class="h-6"></div>
+    <ProjectPreview name="pochola gum" img="pochola.png" start={2021} end="now">
+      <span class="hilite">Designing</span> and <span class="hilite"
+        >producing</span
+      > jewelry of polymer clay and aluminium.
+    </ProjectPreview>
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
-          <p>
-            <span class="font-semibold mr-2 sm:mr-1">mail</span>
-            <a href="mailto:jpjagt@pm.me" class="link">jpjagt@pm.me</a>
-          </p>
+    <ProjectPreview
+      name="primavera sí y sin"
+      url="https://jpjagt.github.io/primavera-si-y-sin/"
+      img="primavera-si-y-sin.jpg"
+      start={2022}
+    >
+      I took <span class="hilite">pictures</span> during the primavera festival in
+      Barcelona and recreated those photos in the same spots half a year later. This
+      website was a proposal to the organisers of the primavera festival to feature
+      the project in the next edition.
+    </ProjectPreview>
+  </div>
+  <div class="h-32"></div>
 
-          <span class="mx-6 hidden sm:inline-block">&bull;</span>
-
-          <p>
-            <span class="font-semibold mr-2 sm:mr-1">x</span><a
-              href="https://twitter.com/julymemo"
-              class="link">@julymemo</a
-            >
-          </p>
-
-          <span class="mx-6 hidden sm:inline-block">&bull;</span>
-
-          <p>
-            <span class="font-semibold mr-2 sm:mr-1">github</span><a
-              href="https://twitter.com/jpjagt"
-              class="link">@jpjagt</a
-            >
-          </p>
-        </div>
-
-        <h3 class="header">projects</h3>
-
-        <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
-          <ProjectPreview
-            name="thescraperfactory"
-            url="https://thescraperfactory.com"
-            img="thescraperfactory.jpg"
-            start={2024}
-            end="now"
-          >
-            Building LLM-powered <span class="hilite"
-              >web scraper factories</span
-            >, automating the process of data extraction from the web, with <a
-              href="https://lodder.dev"
-              class="link">Paul Lodder</a
-            >.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="partijplein.nl"
-            url="https://partijplein.nl"
-            img="partijplein.png"
-            start={2023}
-          >
-            An effort to improve accessibility to election programs for the 2023
-            Dutch Elections by building <span class="hilite"
-              >semantic search</span
-            > over their contents, in <span class="hilite"
-              >multiple languages</span
-            >. Media coverage: <a
-              href="https://nos.nl/collectie/13958/artikel/2498580-partijprogramma-s-makkelijker-te-begrijpen-dankzij-nieuwe-site"
-              class="link">NOS</a
-            > & <a
-              href="https://www.at5.nl/artikelen/223568/verkiezingsprogrammas-begrijpelijker-maken-met-kunstmatige-intelligentie"
-              class="link">AT5</a
-            >. With <a href="https://khaledtamimy.nl/" class="link"
-              >Khaled Tamimy</a
-            > & <a href="https://lodder.dev" class="link">Paul Lodder</a>.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="zonopjebakkes.nl"
-            url="https://zonopjebakkes.nl"
-            start={2022}
-          >
-            <span class="hilite">Frontend development</span> for a webapp showing
-            which terraces are in the sun near you throughout the Netherlands, with
-            <a href="https://lodder.dev" class="link">Paul Lodder</a> & <a
-              href="https://www.robschilder.com/"
-              class="link">Rob Schilder</a
-            >.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="FXR"
-            url="https://fxr-insights.com"
-            start={2020}
-            end={2024}
-          >
-            <span class="hilite">Data engineering</span> and <span
-              class="hilite">full-stack web dev</span
-            > for a startup designing scalable software to have creators gain insight
-            and control of their royalty income.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="Generation NOW"
-            img="generation-now.jpg"
-            start={2019}
-            end={2020}
-          >
-            <span class="hilite">Full-stack web dev</span> for a carbon footprint
-            reduction service with the mission of accelerating a cultural shift to
-            fight back against climate change.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="pochola gum"
-            img="pochola.png"
-            start={2021}
-            end="now"
-          >
-            <span class="hilite">Designing</span> and <span class="hilite"
-              >producing</span
-            > jewelry of polymer clay and aluminium.
-          </ProjectPreview>
-
-          <ProjectPreview
-            name="primavera sí y sin"
-            url="https://jpjagt.github.io/primavera-si-y-sin/"
-            img="primavera-si-y-sin.jpg"
-            start={2022}
-          >
-            I took <span class="hilite">pictures</span> during the primavera festival
-            in Barcelona and recreated those photos in the same spots half a year
-            later. This website was a proposal to the organisers of the primavera
-            festival to feature the project in the next edition.
-          </ProjectPreview>
-        </div>
-        <div class="h-32"></div>
-
-        <div class="flex items-center">
-          <pre
-            class="text-gray-400">
-         _._
-        (\!/)
-      (((|||)))
-     ((//'~`\\))
-    ((!       !))
-    ((. o   o .))
-     ))   J   ((
-     ( \  -  / )
-       !`---'!
-      /'     `\
+  <div class="flex items-center">
+    <pre
+      class="text-gray-400">
+     _._
+    (\!/)
+  (((|||)))
+ ((//'~`\\))
+((!       !))
+((. o   o .))
+ ))   J   ((
+ ( \  -  / )
+   !`---'!
+  /'     `\
  _.-;' ._\ /_. `:-._
 ' \ \    `.'    / / `</pre>
-        </div>
-        <div class="h-16"></div>
-      </div>
-    </div>
-  </body>
-</html>
+  </div>
+  <div class="h-16"></div>
+</Main>
 
 <style>
   .header {

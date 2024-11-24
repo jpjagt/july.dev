@@ -1,0 +1,113 @@
+---
+import Main from '@/layouts/main.astro'
+
+const shortcuts = [
+  {
+    key: 'ctrl + Q',
+    description: 'Shutdown Spotify',
+  },
+  {
+    key: 'ctrl + Tab',
+    description: 'Rotate forward through sidebar items',
+  },
+  {
+    key: 'ctrl + shift + Tab',
+    description: 'Rotate backward through sidebar items',
+  },
+  {
+    key: 'j',
+    description: 'Scroll down',
+  },
+  {
+    key: 'k',
+    description: 'Scroll up',
+  },
+  {
+    key: 'g',
+    description: 'Scroll to top of page',
+  },
+  {
+    key: 'shift + G',
+    description: 'Scroll to bottom of page',
+  },
+  {
+    key: 'shift + H',
+    description: 'Go back',
+  },
+  {
+    key: 'shift + L',
+    description: 'Go forward',
+  },
+  {
+    key: 'm',
+    description: 'Like/Unlike current track',
+  },
+  {
+    key: '/',
+    description: 'Open search page',
+  },
+  {
+    key: 'ctrl + ←',
+    description: 'Previous song',
+  },
+  {
+    key: 'ctrl + →',
+    description: 'Next song',
+  },
+  {
+    key: 'ctrl + ↑',
+    description: 'Increase volume',
+  },
+  {
+    key: 'ctrl + ↓',
+    description: 'Decrease volume',
+  },
+  {
+    key: 'f',
+    description: 'Activate Vim mode (press Escape to exit)',
+  },
+]
+---
+
+<Main>
+  <div class="h-8 sm:h-32"></div>
+
+  <!-- <h1 class="mb-8">spicetify keyboard shortcuts:</h1> -->
+
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="border-b dark:border-gray-700">
+          <th
+            class="py-1 px-6 text-left font-semibold text-black dark:text-white"
+            >shortcut</th
+          >
+          <th
+            class="py-1 px-6 text-left font-semibold text-black dark:text-white"
+            >description</th
+          >
+        </tr>
+      </thead>
+      <tbody>
+        {
+          shortcuts.map((shortcut, i) => (
+            <tr
+              class={`${i % 2 === 0 ? 'rounded bg-gray-50 dark:bg-gray-800/50' : ''}`}
+            >
+              <td class="py-0.5 px-6 font-mono text-sm">{shortcut.key}</td>
+              <td class="py-0.5 px-6 lowercase">{shortcut.description}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="h-32"></div>
+</Main>
+
+<style>
+  table {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm;
+  }
+</style>
