@@ -1,7 +1,7 @@
 ---
-import { ProjectPreview } from '@/components'
-import Main from '@/layouts/main.astro'
-import Bull from '@/components/Bull.astro'
+import { ProjectPreview } from "@/components"
+import Main from "@/layouts/main.astro"
+import Bull from "@/components/Bull.astro"
 ---
 
 <Main>
@@ -11,18 +11,18 @@ import Bull from '@/components/Bull.astro'
     <img
       src="/images/july.jpg"
       alt="an image of july!"
-      class="max-w-full w-40 md:w-64 h-auto rounded-2xl inline-block p-1.5 bg-white dark:bg-gray-800 border dark:border-gray-700"
+      class="max-w-full w-40 md:w-64 h-auto rounded-2xl inline-block p-1.5 bg-card border border-border"
     />
   </div>
 
   <div class="h-8 sm:h-12"></div>
 
   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
-    <h1 class="font-semibold text-black dark:text-white text-lg">
+    <h1 class="font-semibold text-foreground text-lg">
       july jagt
-    </h1><span class="mx-2 hidden sm:inline-block text-gray-400">&bull;</span>
+    </h1><span class="mx-2 hidden sm:inline-block text-muted-foreground">&middot;</span>
     <h2>
-      fullstack dev, data engineer, making &#123; ui's, lamps, jewelry, <a
+      design engineer. making &#123; ux, lamps, jewellery, <a
         href="/pomegranate"
         class="link">music</a
       >
@@ -30,23 +30,13 @@ import Bull from '@/components/Bull.astro'
     </h2>
   </div>
 
-  <div class="h-8 md:h-12"></div>
+  <div class="h-5 md:h-6"></div>
 
-  <p class="mb-4">
-    I <span>code</span>, design <span>creatively</span>, and work with
-    <span>passionate and intelligent people</span>.
+  <p>
+    I like to design beautiful systems at the right level of complexity.
   </p>
 
-  <p class="mb-4">
-    Throughout my life, I have felt a deep caring, an intention of goodness, and
-    an eagerness to learn, improve, and give back to the world. My goal in life
-    is to help society and the natural world be the best versions of themselves
-    by designing beautiful systems at the right level of complexity.
-  </p>
-
-  <p>And to have fun!</p>
-
-  <div class="h-8 md:h-12"></div>
+  <div class="h-5 md:h-6"></div>
 
   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
     <p>
@@ -77,14 +67,22 @@ import Bull from '@/components/Bull.astro'
 
   <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
     <ProjectPreview
+      name="supernal ai"
+      url="https://getsupernal.ai"
+      start={2025}
+      end="now"
+    >
+      Office work, sans the poor UX SaaS interfaces.
+    </ProjectPreview>
+
+    <ProjectPreview
       name="social technology lab"
       url="https://socialtechnologylab.com"
       start={2024}
-      end="now"
+      end={2025}
     >
-      We are changemakers who believe that technology needs to be applied
-      socially and ethically. We build technological applications in a
-      thoughtful, selective, and human-centred way.
+      Technology, applied socially and ethically. We build software in a
+      thoughtful, selective, and <span class="hilite">human-centred</span> way.
     </ProjectPreview>
 
     <ProjectPreview
@@ -157,7 +155,7 @@ import Bull from '@/components/Bull.astro'
     <ProjectPreview name="pochola gum" img="pochola.png" start={2021} end="now">
       <span class="hilite">Designing</span> and <span class="hilite"
         >producing</span
-      > jewelry of polymer clay and aluminium.
+      > jewellery of polymer clay and aluminium.
     </ProjectPreview>
 
     <ProjectPreview
@@ -176,7 +174,7 @@ import Bull from '@/components/Bull.astro'
 
   <div class="flex items-center justify-center">
     <pre
-      class="text-gray-400 text-sm">
+      class="text-muted-foreground text-sm">
      _._
     (\!/)
   (((|||)))
@@ -194,6 +192,6 @@ import Bull from '@/components/Bull.astro'
 
 <style>
   .header {
-    @apply font-semibold text-lg mt-20 mb-6 text-black dark:text-white;
+    @apply font-semibold text-lg mt-20 mb-6 text-foreground;
   }
 </style>
