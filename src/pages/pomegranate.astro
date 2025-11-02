@@ -1,31 +1,31 @@
 ---
-import { promises as fs } from 'node:fs'
-import { join } from 'path'
+import { promises as fs } from "node:fs"
+import { join } from "path"
 
 const trackList = [
-  'periodic signals',
-  'three days',
-  'make me see',
-  'bleached',
-  'clay',
-  'no pasa nada',
+  "periodic signals",
+  "three days",
+  "make me see",
+  "bleached",
+  "clay",
+  "no pasa nada",
   "they won't hurt",
-  'pomegranate',
-  'lullaby for angels',
-  'fallen angels',
-  'not your heart to break',
-  'a thousand planes in the sky',
-  'little star',
-  'everything flows',
-  'hold me close for one more time',
+  "pomegranate",
+  "lullaby for angels",
+  "fallen angels",
+  "not your heart to break",
+  "a thousand planes in the sky",
+  "little star",
+  "everything flows",
+  "hold me close for one more time",
 ]
 
-const lyricsPath = join(process.cwd(), 'src', 'lyrics')
+const lyricsPath = join(process.cwd(), "src", "lyrics")
 
 const lyrics = await Promise.all(
   trackList.map(async (track) => {
-    const filePath = join(lyricsPath, track + '.txt')
-    const content = await fs.readFile(filePath, 'utf-8')
+    const filePath = join(lyricsPath, track + ".txt")
+    const content = await fs.readFile(filePath, "utf-8")
     return {
       title: track.trim(),
       text: content.trim(),
@@ -94,10 +94,10 @@ const lyrics = await Promise.all(
               <h2 class="text-lg font-semibold mb-1">pomegranate</h2>
               <p class="mb-6 text-sm text-red-600 dark:text-red-400">
                 <a
-                  href="https://untitled.stream/library/project/8G8lPRawq24Tfas-D_ssY"
+                  href="https://untitled.stream/library/project/DwD6kKYkicbwKpja762ae"
                   class="underline text-inherit hover:no-underline"
                   target="_blank">listen</a
-                >
+                                        >
               </p>
               <ul class="opacity-70">
                 <template x-for="(track, index) in lyrics">
