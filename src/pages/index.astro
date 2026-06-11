@@ -65,11 +65,12 @@ import Bull from "@/components/Bull.astro"
 
   <h3 class="header">apps & sites</h3>
 
-  <ProjectPreview
-    name="pager"
-    url="/pager"
-    start={2026}
-  >
+  <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
+    <ProjectPreview
+      name="pager"
+      url="/pager"
+      start={2026}
+    >
     A soothing way to stay in touch with a friend.
   </ProjectPreview>
 
@@ -80,6 +81,7 @@ import Bull from "@/components/Bull.astro"
   >
     A cultural calendar for Barcelona.
   </ProjectPreview>
+  </div>
 
   <h3 class="header">projects</h3>
 
