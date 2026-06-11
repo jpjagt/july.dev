@@ -1,0 +1,76 @@
+---
+import { ProjectPreview } from "@/components"
+import Main from "@/layouts/main.astro"
+import Bull from "@/components/Bull.astro"
+import Kbd from "@/components/Kbd.astro"
+---
+
+<Main htmlClass="pager-page">
+  <div class="max-w-md">
+    <div class="h-4 sm:h-12"></div>
+    <a href="/" class="link underline-offset-4"><span style="text-decoration: none !important;" class="inline-block no-underline mr-1.5 font-mono">&lt;-</span>back to home</a>
+    <div class="h-8 sm:h-24"></div>
+
+  <div class="w-full flex justify-start pr-4 -ml-1.5">
+    <img
+      src="/pager/pager-logo.svg"
+      alt="pager app logo"
+      class="w-full max-w-20 aspect-square"
+    />
+  </div>
+
+  <div class="h-8 sm:h-12"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-0">
+    <h1 class="font-semibold text-foreground text-lg">
+      pager
+    </h1><span class="mx-2 hidden sm:inline-block text-muted-foreground">&middot;</span>
+    <h2>
+      share a line of thought
+    </h2>
+  </div>
+
+  <div class="h-5 md:h-6"></div>
+
+  <div class="space-y-3 max-w-md">
+    <p>
+      a single note that sits in your menu bar, synced with someone that matters to you.
+    </p><p>
+      share a thought, a joke, a link. share a moment.
+    </p><p>
+      no history, no feed, no notifications: just a quiet, shared thought that lives in your periphery.
+    </p><p>
+      pager feels like a note that you pass to your crush in class. like a post-it in your lunchbox, saying &ldquo;i love you&rdquo; or &ldquo;have a wonderful day&rdquo;.
+  </p></div>
+
+  <div class="h-5 md:h-6"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+    <p>
+      <span class="font-semibold mr-2 sm:mr-1">curious?</span>
+      <a href="/pager/Pager.zip" download class="link">download pager for free</a>
+    </p>
+  </div>
+  <p class="text-muted-foreground mt-2 text-sm">(only macOS)</p>
+
+  <div class="h-5 md:h-6"></div>
+  <div class="h-px bg-border w-full"></div>
+  <div class="h-5 md:h-6"></div>
+
+  <div class="space-y-3">
+    <p class="font-semibold">note on installation</p>
+
+    <p>to install, download <Kbd>Pager.zip</Kbd> from the link above, unzip it, and drag <Kbd>Pager.app</Kbd> to Applications.</p>
+
+    <p>while pager is in beta, macOS will complain when you open it ("Apple could not verify…"). close that dialog (don't move it to Trash).</p>
+
+  <p>open <span class="font-medium">System Settings → Privacy & Security</span>, scroll down, and click
+    <span class="font-medium">Open Anyway</span> next to "Pager.app was blocked…".</p>
+
+    <p>that's it; pager will live in your menu bar (it shows up as 📟). on first run it asks you to
+    create a pager (send the code to your BFF, lover, or sibling) or join with a code you received.
+    enable <span class="font-medium">Launch at login</span> so it's always there.</p></div>
+
+
+
+  </div></Main>

@@ -33,7 +33,7 @@ import Bull from "@/components/Bull.astro"
   <div class="h-5 md:h-6"></div>
 
   <p>
-    I like to design beautiful systems at the right level of complexity.
+    I like to design beautiful things at the right level of complexity.
   </p>
 
   <div class="h-5 md:h-6"></div>
@@ -63,6 +63,16 @@ import Bull from "@/components/Bull.astro"
     </p>
   </div>
 
+  <h3 class="header">apps</h3>
+
+  <ProjectPreview
+    name="pager"
+    url="/pager"
+    start={2026}
+  >
+    A soothing way to stay in touch with a friend.
+  </ProjectPreview>
+
   <h3 class="header">projects</h3>
 
   <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
@@ -70,7 +80,7 @@ import Bull from "@/components/Bull.astro"
       name="supernal ai"
       url="https://getsupernal.ai"
       start={2025}
-      end="now"
+      end={2026}
     >
       Office work, sans the poor UX SaaS interfaces.
     </ProjectPreview>
@@ -187,7 +197,6 @@ import Bull from "@/components/Bull.astro"
   /'     `\
 </pre>
   </div>
-  <div class="h-16"></div>
 </Main>
 
 <style>

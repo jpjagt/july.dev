@@ -1,14 +1,16 @@
 ---
-import '@/globals.css'
+import "@/globals.css"
 
 interface Props {
   title?: string
+  htmlClass?: string
 }
 
-const { title = 'july jagt - fullstack dev & data engineer' } = Astro.props
+const { title = "july jagt - fullstack dev & data engineer", htmlClass } =
+  Astro.props
 ---
 
-<html lang="en">
+<html lang="en" class={htmlClass}>
   <head>
     <meta charset="utf-8" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -34,11 +36,13 @@ const { title = 'july jagt - fullstack dev & data engineer' } = Astro.props
   <body>
     <div class="blur" aria-hidden="true"></div>
     <div
-      class="bg-white text-gray-500 dark:bg-gray-900 dark:text-blue-100 min-h-screen"
+      class="bg-background text-foreground min-h-screen"
     >
       <div class="px-4 mx-auto sm:max-w-xl md:max-w-2xl">
         <slot />
       </div>
+
+      <div class="h-16 sm:h-32"></div>
     </div>
   </body>
 </html>
