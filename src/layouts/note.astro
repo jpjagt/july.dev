@@ -1,0 +1,36 @@
+---
+import Main from "./main.astro"
+
+interface Props {
+  frontmatter: {
+    title: string
+    createdAt?: string
+  }
+}
+
+const { frontmatter } = Astro.props
+---
+
+<Main title={frontmatter.title}>
+  <div class="h-8 sm:h-32"></div>
+
+  <article class="prose prose-neutral dark:prose-invert max-w-none">
+    <h1 class="font-medium text-foreground text-2xl mb-3">
+      {frontmatter.title}
+    </h1>
+
+    {frontmatter.createdAt && (
+      <p class="lowercase text-muted-foreground text-sm mb-12">
+        {new Date(frontmatter.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}
+      </p>
+    )}
+
+    <slot />
+  </article>
+
+  <div class="h-16"></div>
+</Main>

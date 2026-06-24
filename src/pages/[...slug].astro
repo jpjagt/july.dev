@@ -1,0 +1,25 @@
+---
+import NoteLayout from "@/layouts/note.astro"
+import Main from "@/layouts/main.astro"
+
+export async function getStaticPaths() {
+  const notes = import.meta.glob('./notes/*.md', { eager: true })
+  
+  return Object.entries(notes).map(([path, note]) => {
+    const slug = path.split('/').pop()?.replace('.md', '') ?? ''
+    return {
+      params: { slug },
+      props: { 
+        frontmatter: (note as any).frontmatter,
+        Content: (note as any).Content 
+      },
+    }
+  })
+}
+
+const { frontmatter, Content } = Astro.props
+---
+
+<NoteLayout frontmatter={frontmatter}>
+  <Content />
+</NoteLayout>
