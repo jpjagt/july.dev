@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Pager</title>
+        <item>
+            <title>0122cc9</title>
+            <pubDate>Thu, 25 Jun 2026 11:43:21 +0200</pubDate>
+            <sparkle:version>43</sparkle:version>
+            <sparkle:shortVersionString>v0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://july.dev/pager/Pager.zip" length="1968480" type="application/octet-stream" sparkle:edSignature="12QSQmBWMQtNw6KMztVkLoff5v3xuBdb0Z3s0FlS2ZMrCS8OPKTtKvaVQ2TFzeleE9bZRxUy4iH9Hm5R9hNBCA=="/>
+        </item>
+    </channel>
+</rss>
