@@ -11,31 +11,36 @@ But I didn't read. Instead, I spent the time on my phone, scrolling X. Every mov
 
 How often do you pick up your phone to play music, and end up doing something completely different? After all, it's quite the informational jungle to navigate. You open your phone, and are greeted by a stack of notifications you didn't ask for. If you successfully dodge those and make it to Spotify, it shows you some home feed with (sponsored) recommendations to arrive to your music library; and there, you scroll through all these albums you rarely listen to (all placed there with a single click), overwhelmed by the optionality. Finally, you find an album you like, put it on, and your lizard thumbs automagically open your algorithm of choice (Instagram, TikTok), and you spend 20 minutes scrolling without ever really intending to.
 
-About a year ago, I started using an iPod (a Nano, 7th generation — the only non-touch model that has bluetooth). Playing music became playing music again: you open the iPod, select from probably a handful of albums that you each really like (after all, you've consciously put in effort to get each album on the iPod), press play and that's it — you have nothing else to do. Sometimes, I notice my thumbs twiddling with the device after, seeking the algorithms that aren't there. It's the *literal muscle memory of my informational addiction*. It's fascinating, funny, and scary.
-
 ---
 
-19 years after the historic introduction of the iPhone in 2007, we're deeply entrenched in the current paradigm of personal technology: a pocket-sized slab that we carry around everywhere, which gives us access to anything. Well, in theory.
+19 years after the historic introduction of the iPhone in 2007, we're deeply entrenched in the current paradigm of personal technology: a pocket-sized slab that we carry around everywhere, which allows us to do anything. Well, in theory: in practice, it seems we do quite a lot of the same few things. The premise was that of a bicycle for the mind, but perhaps it turned out to be more of a dopamine dripfeed[^1]: an IV of IG, that we carry around everywhere, and can go nowhere without.
 
-The strange part is that this device was supposed to be the opposite of a trap. It was supposed to be a (pocketable?) bicycle for the mind — a tool that takes what you put in and carries you further toward wherever you were trying to go. It was supposed to bolster our agency, our ability to learn and thrive, to help us develop into beautiful versions of ourselves.
+[^1]: It's still quite absurd to me that these digital locations of highly addictive behaviour are literally called _feeds_.
 
-But it didn't quite happen like that. We crave information the way we crave sugar — it used to be scarce and precious, and now it's manufactured at industrial scale. The brain takes the hit whether the information is useful or not, and there's a whole economy optimized to mass-produce the cheapest, most craveable version of it.[^1] So "anything you want" quietly collapses into "the thing that's been engineered to be irresistible," over and over. The freedom is real, but it gets captured. We end up informationally obese: continuously plugged into dopamine dripfeeds, scratching the itch, unable to recall five minutes later what we even scrolled past.
+The impact of this iteration of personal tech on society has been a public talking point in the past few years, and you're likely aware of the sentiment: you might very well share it. We're weary of our smartphones, because they've proven to be amazingly capable at stealing our attention. We're weary of the online world, for what it lacks from the offline. And, we're starting to dream of ways in which it could be different.
 
-[^1]: https://www.gurwinder.blog/p/the-intellectual-obesity-crisis
+But what should the new paradigm look like? What form will it take? We're seeing some proposals being put forward: some using novel forms, like Meta's AR glasses and Apple's Vision Pro (although I'm not sure a second version is ever going to come), some using .
 
-Our black slabs make this easy in two ways:
-1. It pushes information to our brain we never actively asked for, through notifications; apps' homescreens of unread messages; red bubbly badges.
-2. It's easy to access anything at any time. (we'll allow you to reach Instagram within a few clicks, because you might want to do exactly that)
+For me, my dreams about this form factor became more concrete about one and a half years ago. Around that time, I started using an iPod (a nano, 7th generation — the only non-touch model that has Bluetooth). And when I used it, playing music became playing music again: I'd open my iPod, select something from a handful of albums — each of which I really liked because I'd consciously put in effort to get it on there — I'd press play, listen, and that would be it: I'd have nothing more to lose my attention to. Sometimes, I'd notice my thumbs twiddling with the device after, seeking the algorithms that weren't there: I'd be observing the *literal muscle memory of my addiction to information*.
 
-That second part gets sold as respect for my agency, but a device with no opinion just hands you whatever you reach for. Want the XL menu? Sure, your call. Want to try heroin? Here's the syringe. It offers no resistance — least of all to the impulse that's loudest in the moment, which is always the dripfeed.
+At the same time, I can't express how refreshing my interactions have felt. There existed nothing outside of engaging with my favourite music. Every time I'd put a few new albums on, I was happy for weeks after seeing them appear on that tiny screen. Using that little device was quiet, calming, and soothing, and it still gives me joy to tap the screen and pick out music to play. It feels like sitting on a hill, and there's a gentle breeze caressing the skin of your arms. By comparison, my iPhone feels like a storm that continually batters you with heavy gusts.
 
-We've tried to address this half-heartedly: iPhone's focus modes, a plethora of time-based app blockers. But they're thin layers bolted onto the paradigm, and they're too easy to peel back off. "Work mode" vs "sleep mode" are absurdly blunt instruments for something as fine-grained as a specific task I'd like to do in the next thirty seconds. And the siren call of the algorithms, their lure of dopamine, makes me untie myself from the mast, and hit that "five more minutes" button.
+I realized that our personal technology seems to have foregone us. My phone does two things that its predecessor, that small pink iPod Nano, doesn't:
+1. It pushes information to your brain that you didn't request: through
+   notifications; apps' homescreens of unread messages; red bubbly
+   badges.
+2. It allows you to access anything at any time: it's a single portal to any
+   app, site, or service.
 
-I'm tired of this. I wish all my technological interactions felt like my iPod.
+I understand these devices were designed with a bicycle in mind: facilitating your agency, letting you ride into the world. But that world has been optimized to get you to step off your bike, and settle in the opium dens of Meta and Bytedance. And perhaps it's "no-one's" fault, but just the way the world had to go. I recently read an essay titled [The Intellectual Obesity Crisis](https://www.gurwinder.blog/p/the-intellectual-obesity-crisis), which compares information to sugar. Our brains evolved to crave it because it was scarce, until suddenly it wasn't anymore; and so we're left consuming junk food (and info) *en masse*, cheaply produced and unhealthy, but giving us that sweet release of dopamine.
 
----
+That's why the iPhone only half-works as a bicycle: it is a continuous battle
+with our lizard brain. By removing all constraints from our interfaces, we've
+placed the burden of enforcing them upon our own shoulders. That's why your thumbs move towards the strongest dopamine feed of the moment, all by themselves.
 
 Perhaps, it's time for a new paradigm. New hardware, built by people who accept that we are just advanced lizards looking for the next neurochemical hit. What principles would this tech be built on? Here's some of my guesses:
+
+**Hold intentionality in high regard.** Personal technology should empower people to do things with intent, and understand that a user's intention can be encroached on. It should not push information, it should not encourage us to overindulge.
 
 **Single-purpose, not omni-purpose.** The reason the iPod works really well is because it just does a single thing; it's not a black mirror to every single thing I could want at any moment (which will always lead to the most addictive thing, the dopamine dripfeed). The physical friction/effort of switching the device in my hand from an iPod to iPhone is enough to prevent me from opening Instagram after I hit play on an album.
 
