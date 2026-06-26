@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/alpinejs": "^1.0.0",
     "@astrojs/check": "^0.9.9",
+    "@astrojs/markdown-satteri": "^0.3.2",
     "@astrojs/tailwind": "^6.0.2",
     "@types/alpinejs": "^3.13.10",
     "@types/node": "^20.14.12",
