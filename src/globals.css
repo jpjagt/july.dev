@@ -81,6 +81,24 @@
 }
 
 @layer components {
+  .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    font-weight: 500;
+  }
+
+  .prose-neutral {
+    --tw-prose-headings: #303030;
+    --tw-prose-body: #404040;
+  }
+
+  .prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    text-underline-offset: 4px;
+  }
+
+  .prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)):hover {
+    text-decoration: none;
+  }
+
+
   .link {
     @apply relative underline hover:no-underline text-inherit;
   }
