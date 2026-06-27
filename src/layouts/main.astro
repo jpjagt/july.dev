@@ -53,25 +53,16 @@ const {
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+    <script defer src="https://umm.july.dev/script.js" data-website-id="51380124-b677-4544-89ec-333bea638db5"></script>
   </head>
   <body>
-    <div class="blur" aria-hidden="true"></div>
     <div
       class="bg-background text-foreground min-h-screen"
     >
-      <div class="px-4 mx-auto sm:max-w-xl md:max-w-2xl">
         <slot />
-      </div>
-
-      <div class="h-16 sm:h-32"></div>
     </div>
   </body>
 </html>

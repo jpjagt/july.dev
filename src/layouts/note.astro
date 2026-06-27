@@ -1,36 +1,51 @@
 ---
 import Main from "./main.astro"
+import type { NoteFrontmatter } from "@/types/note"
 
 interface Props {
-  frontmatter: {
-    title: string
-    createdAt?: string
-  }
+  frontmatter: NoteFrontmatter
 }
 
 const { frontmatter } = Astro.props
+
+const formattedDate = frontmatter.createdAt
+  ? new Date(frontmatter.createdAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : null
 ---
 
 <Main title={frontmatter.title}>
-  <div class="h-8 sm:h-32"></div>
+  <div class="blur" aria-hidden="true"></div>
 
-  <article class="prose prose-neutral dark:prose-invert max-w-none">
-    <h1 class="font-medium text-foreground text-2xl mb-3">
-      {frontmatter.title}
-    </h1>
+  <!-- classic minimal blog: plain july.dev / back-home link, then a simple
+       title + date header and a narrow prose column. No ledger here — it reads
+       too busy for long-form text. -->
+  <div class="px-4 mx-auto max-w-xl">
+    <div class="h-4 sm:h-8"></div>
 
-    {frontmatter.createdAt && (
-      <p class="lowercase text-muted-foreground text-sm mb-12">
-        {new Date(frontmatter.createdAt).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}
-      </p>
-    )}
+    <nav class="text-sm">
+      <a href="/" class="font-medium text-foreground no-underline">july.dev</a>
+      <a href="/" class="link ml-3">&larr; home</a>
+    </nav>
 
-    <slot />
-  </article>
+    <div class="h-10 sm:h-16"></div>
 
-  <div class="h-16"></div>
+    <header>
+      <h1 class="text-lg font-medium text-foreground">{frontmatter.title}</h1>
+      {formattedDate && (
+        <p class="lowercase text-muted-foreground text-sm mt-1">{formattedDate}</p>
+      )}
+    </header>
+
+    <div class="h-8 sm:h-10"></div>
+
+    <article class="prose prose-neutral dark:prose-invert max-w-none">
+      <slot />
+    </article>
+
+    <div class="h-16"></div>
+  </div>
 </Main>

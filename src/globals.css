@@ -2,10 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1; /* fix for Chrome */
+}
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 8.9% 46.1%;
+    /* tweak these two together to scale the whole ledger */
+    --band: 28px; /* row height */
+    --band-font: calc(var(--band) - 4px); /* text size (kept < --band so lines rest on the rule) */
+    /* push text down so its baseline lands on the band's bottom rule
+       (instead of sitting optically centered). tune if you change the font. */
+    --baseline-shift: 0px;
+
+    /* ledger ruling: light under empty bands, stronger under text bands */
+    --rule-color: 89, 35%, 91%;
+
+    --background: 87 36% 95%;
+    --foreground: 171, 88%, 23%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -14,21 +35,31 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 87, 36%, 90%;
+    --muted-foreground: 171 23% 52%;
     --accent: 25 95% 53%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
+    --border: 0 0% 80%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.5rem;
   }
 
+  /* tighter ledger bands on mobile */
+  @media (max-width: 639px) {
+    :root {
+      --band: 22px;
+      --band-font: calc(var(--band) - 5px); /* text size (kept < --band so lines rest on the rule) */
+    }
+  }
+
   .dark {
-    --background: 220.9 39.3% 11%;
-    --foreground: 214.3 94.6% 92.7%;
+    --rule-color: 0 0% 12%;
+
+    --background: 0 0% 5%;
+    --foreground: 0 0% 96%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
@@ -43,7 +74,7 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
+    --border: 0 0% 22%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
   }
@@ -60,23 +91,6 @@
     backdrop-filter: blur(5px);
     -webkit-mask-image: linear-gradient(to top, #fff 50%, transparent);
     mask-image: linear-gradient(to top, #fff 50%, transparent);
-  }
-
-  .pager-page {
-    --background: 137 10.6% 88.5%;
-    --foreground: 138.4 10.2% 21.5%;
-    --border: 137.2 10.3% 79.2%;
-    --muted: 137.2 10.3% 79.2%;
-    --muted-foreground: 138.4 9.5% 29.1%;
-    --accent: 82.7 78% 48.5%;
-  }
-
-  .pager-page.dark {
-    --background: 89.3 80.4% 10%;
-    --foreground: 137 10.6% 88.5%;
-    --border: 86.3 69% 22.7%;
-    --muted: 86.3 69% 22.7%;
-    --muted-foreground: 79.6 89.1% 89.2%;
   }
 }
 
@@ -112,7 +126,7 @@
   }
 
   .link {
-    @apply relative underline hover:no-underline text-inherit;
+    @apply relative underline text-inherit;
   }
 
   .link::after {
@@ -130,10 +144,265 @@
   /* } */
 
   .hilite {
-    @apply text-foreground font-medium;
+    @apply font-medium;
   }
 
   .kbd {
     @apply pointer-events-none inline-flex h-5 w-fit min-w-5 items-center justify-center gap-1 rounded-sm bg-muted px-1 font-sans text-sm text-muted-foreground select-none;
+  }
+
+  /* ── Ledger (lined paper) ─────────────────────────────────────
+     A bordered box ruled every 32px, like lined paper. The rules are
+     a repeating background locked to --band, so EVERY band line shows
+     — including the continuation lines of a wrapped paragraph. Content
+     is placed freely on a 12-col grid on top; text uses a 32px line
+     box so every line (wrapped or not) rests on a rule. */
+
+  .ledger {
+    /* horizontal rules only — no vertical side borders */
+    @apply relative border-y border-border;
+    /* base ruling: a light hairline at the bottom of every 32px band.
+       Empty (spacer) bands show this light rule. */
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--band) - 2px),
+      hsl(var(--rule-color, var(--muted))) calc(var(--band) - 2px),
+      hsl(var(--rule-color, var(--muted))) var(--band)
+    );
+  }
+
+  /* One logical row: a 14-col grid where the first and last columns are
+     reserved as empty edge gutters, so content lives in cols 2–13 (a 12-col
+     usable field). The ruling under text is painted per-CELL (below), so only
+     the columns that actually hold text get the darker rule. */
+  .row {
+    @apply relative grid;
+    grid-template-columns: 1fr repeat(12, minmax(0, 1fr)) 1fr;
+    column-gap: 0;
+  }
+
+  /* An empty band, exactly one row tall, for vertical spacing. Has height
+     on its own (unlike an empty .row) so the lined-paper rule shows. */
+  .row-spacer {
+    height: var(--band);
+  }
+  /* "extra" desktop-only spacer bands collapse on mobile so sections sit
+     tighter (e.g. the top section drops from mt=5 to smMt=2). */
+  @media (max-width: 639px) {
+    .row-spacer-md {
+      height: 0;
+    }
+  }
+
+  /* Hovering a linked row: muted bg, red text, and a foreground-colored
+     border on top & bottom drawn with a ring (box-shadow) so it sits OVER
+     the adjacent lined-paper rules instead of nudging layout. */
+  .row-link:hover {
+    @apply bg-muted text-red-600;
+    /* top + bottom border in --foreground, overlapping neighbouring rules */
+    box-shadow:
+      0 -1px 0 0 hsl(var(--foreground)),
+      0 1px 0 0 hsl(var(--foreground));
+  }
+  /* everything in a hovered row goes red (overrides the muted body default
+     and the foreground hilite/link/title colors) */
+  .row-link:hover .cell,
+  .row-link:hover .cell-title,
+  .row-link:hover .cell .hilite,
+  .row-link:hover .cell .link,
+  .row-link:hover .muted {
+    @apply text-red-600;
+  }
+
+  /* "Stretched link": the overlay anchor fills the whole row so the entire
+     band is clickable. It must take size itself (a ::after relative to a
+     zero-size <a> wouldn't), and we avoid nesting <a> inside the row's links
+     (invalid HTML, tears the DOM apart). */
+  .row-stretch {
+    @apply absolute inset-0 z-0 cursor-pointer;
+  }
+  /* In a linked row, cells must let clicks fall through to the overlay
+     anchor — except real inner links, which stay clickable on top. */
+  .row-link .cell {
+    @apply pointer-events-none;
+  }
+  .row .link {
+    @apply relative z-10 pointer-events-auto;
+  }
+
+  /* Inline link hover inside the ledger: just turn red, no underline
+     toggle / accent pseudo-element. */
+  .ledger .link:hover {
+    @apply text-red-600;
+  }
+  .ledger .link:hover::after {
+    @apply opacity-0;
+  }
+
+  /* When a link is hovered inside an already-hovered row, dim the rest of
+     that cell's text (incl. hilites) to muted-foreground so only the hovered
+     link stays red. The hovered link itself is re-reddened last. */
+  .row-link:hover .cell:has(.link:hover),
+  .row-link:hover .cell:has(.link:hover) .hilite,
+  .row-link:hover .cell:has(.link:hover) .link:not(:hover) {
+    @apply text-muted-foreground;
+  }
+  .row-link:hover .cell .link:hover {
+    @apply text-red-600;
+  }
+
+  /* A cell placed on the band grid. line-height = one band; cells
+     top-align so a tall neighbour doesn't drag a short cell down.
+     Horizontal padding gives a gutter without breaking band height. */
+  .cell {
+    line-height: var(--band);
+    font-size: var(--band-font);
+    /* drop the baseline onto the bottom rule; transform doesn't affect
+       layout height, so band/grid alignment is preserved. */
+    transform: translateY(var(--baseline-shift));
+    /* body text recedes to muted; highlights & links pop in --foreground */
+    @apply relative self-start tracking-tight pr-4 min-w-0 text-muted-foreground;
+
+    /* Placement is var-driven so the media queries below can reflow cells
+       without fighting an inline grid-column. `--cell-col` is the 1-based
+       usable column; +1 skips the reserved left gutter. When `--cell-col` is
+       unset the start falls back to `auto` (natural flow). */
+    grid-column: calc(var(--cell-col) + 1) / span var(--cell-span, 1);
+  }
+  .cell:not([style*="--cell-col:"]) {
+    /* no explicit col → flow naturally, just honor the span */
+    grid-column: span var(--cell-span, 1);
+  }
+
+  /* ── md tier (≤899px): swap in --cell-*-md, falling back to desktop ── */
+  @media (max-width: 899px) {
+    .cell {
+      grid-column:
+        calc(var(--cell-col-md, var(--cell-col)) + 1) / span
+        var(--cell-span-md, var(--cell-span, 1));
+    }
+    .cell:not([style*="--cell-col:"]):not([style*="--cell-col-md:"]) {
+      grid-column: span var(--cell-span-md, var(--cell-span, 1));
+    }
+  }
+
+  /* ── sm tier (≤639px): swap in --cell-*-sm, falling back to md→desktop.
+     --cell-row-sm optionally pins the cell to an explicit grid row so an
+     item can be "title … year" (row 1) + "body" (row 2) in one Row. ── */
+  @media (max-width: 639px) {
+    .cell {
+      grid-column:
+        calc(var(--cell-col-sm, var(--cell-col-md, var(--cell-col))) + 1) / span
+        var(--cell-span-sm, var(--cell-span-md, var(--cell-span, 1)));
+      grid-row: var(--cell-row-sm, auto);
+    }
+    .cell:not([style*="--cell-col:"]):not([style*="--cell-col-md:"]):not(
+        [style*="--cell-col-sm:"]
+      ) {
+      grid-column: span
+        var(--cell-span-sm, var(--cell-span-md, var(--cell-span, 1)));
+    }
+  }
+
+  /* highlights and inline links stand out against the muted body */
+  .cell .hilite,
+  .cell .link {
+    @apply text-foreground;
+  }
+
+  .cell .link {
+    text-underline-offset: 2px;
+  }
+
+  /* a cell link that reads as plain body text: keep the underline but use the
+     muted body colour instead of the foreground highlight */
+  .cell .link.link-muted {
+    @apply text-muted-foreground hover:text-red-600;
+  }
+
+  .cell-title {
+    /* serif reads ~10% smaller at the same px, so bump it up to match */
+    /* font-size: calc(var(--band-font) * 1.1); */
+    @apply font-sans font-semibold text-foreground break-words;
+  }
+
+  .cell-header {
+    @apply font-sans font-semibold text-foreground;
+  }
+
+  /* Linked item titles look like links: the name is underlined and followed by
+     a non-underlined ↗ arrow in the same colour. The whole row is the click
+     target (stretched overlay), so this is purely a visual affordance — it
+     inherits the row's red on hover via the .row-link:hover .cell-title rule. */
+  .item-name {
+    @apply underline;
+    text-underline-offset: 3px;
+  }
+  .item-arrow {
+    @apply no-underline;
+    /* nudge up to read as a "leaving the page" mark, snug to the name */
+    margin-left: 0.1em;
+    font-size: 0.85em;
+    vertical-align: 0.08em;
+  }
+
+  /* Contact links stacked inside one right-hand cell: a label + link pair per
+     band, so the three links always sit on consecutive bands regardless of how
+     far the bio wraps on the left. The 1fr / 3fr split mirrors the old
+     col-9 (label) + col-10..12 (link) layout. */
+  .contact-links {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    align-items: baseline;
+    /* drop one band so the links start beside the bio's first line, not the
+       name on band 1 */
+    margin-top: var(--band);
+  }
+  .contact-links > * {
+    line-height: var(--band);
+  }
+  /* on mobile the links stack below the bio; keep one band of breathing room
+     between the bio paragraph and the links (no longer a line-2 alignment) */
+  @media (max-width: 639px) {
+    .contact-links {
+      margin-top: var(--band);
+    }
+  }
+
+  .muted {
+    @apply text-muted-foreground;
+  }
+
+  /* TEMP debug: visualize the 14-col grid (gutter | 12 usable | gutter).
+     Pink lines = every column boundary; reserved edge gutters tinted. */
+  .ledger.debug-cols::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0 z-20;
+    background-image: repeating-linear-gradient(
+      to right,
+      hsl(330 90% 60% / 0.35) 0,
+      hsl(330 90% 60% / 0.35) 1px,
+      transparent 1px,
+      transparent calc(100% / 14)
+    );
+  }
+  .ledger.debug-cols::after {
+    content: "";
+    @apply pointer-events-none absolute inset-y-0 z-20;
+    /* tint the two reserved edge columns */
+    left: 0;
+    right: 0;
+    background:
+      linear-gradient(
+        to right,
+        hsl(200 90% 60% / 0.12) calc(100% / 14),
+        transparent calc(100% / 14)
+      ),
+      linear-gradient(
+        to left,
+        hsl(200 90% 60% / 0.12) calc(100% / 14),
+        transparent calc(100% / 14)
+      );
   }
 }

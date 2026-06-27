@@ -1,0 +1,20 @@
+* june 2026
+
+We've grown tired of smartphones. But what could be a new direction for
+personal tech? [I wrote about what using an iPod taught me]: our interactions
+should be (designs) single-purpose and intentional.
+
+In the same vein, I created a communication app called [pager] that allows you
+to send one message to someone's menu bar. I've been using it for a few months
+with a person I'm seeing, and it really gives you this feeling of putting a
+note in the lunch-box of a loved one.
+
+Spending time in Barcelona the past few months made me realize there is just no
+good cultural event calendar, [so I built one]. It's strongly inspired by
+[jazzin.amsterdam].
+
+** projects
+
+- writing: /a-new-page-for-personal-technology
+- pager: pager, /pager
+- event calendar: cartelita, https://cartelita.july.dev

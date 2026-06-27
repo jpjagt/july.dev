@@ -1,216 +1,203 @@
 ---
-import { ProjectPreview } from "@/components"
+/*
+ * ─── UPDATE WORKFLOW ─────────────────────────────────────────────────────
+ * The diary content on this homepage is authored from `diary.org` (repo root).
+ * To update the site: read diary.org, and reflect any changes here.
+ *
+ * diary.org structure:
+ *   * <period>            → a diary entry (period label + prose paragraphs)
+ *     [bracketed phrase]  → becomes an inline <a class="link"> in the prose
+ *   ** projects           → a legend mapping phrase → "name, url"
+ *
+ * Mapping rules:
+ *   - Every bracketed phrase becomes a plain <a class="link">.
+ *   - Each diary entry's period label sits in the left title column
+ *     (COLS.title) on the same row as its first prose paragraph.
+ *   - Newest period first.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+import { Row, Cell, ProjectItem } from "@/components"
 import Main from "@/layouts/main.astro"
-import Bull from "@/components/Bull.astro"
+
+// Centralized column layout for every entry row (notes / apps / projects).
+// Tweak here to reflow all sections at once.
+const COLS = {
+  title: { col: 1, span: 2 },
+  body: { col: 3, span: 7 },
+  meta: { col: 10, span: 3 },
+} as const
+
+const projects = [
+  {
+    name: "supernal ai",
+    url: "https://getsupernal.ai",
+    year: "2025—26",
+    body: "Office work, sans the poor UX SaaS interfaces.",
+  },
+  {
+    name: "social technology lab",
+    url: "https://socialtechnologylab.com",
+    year: "2024—25",
+    body: 'Technology, applied socially and ethically. STL builds software in a thoughtful, selective, and <span class="hilite">human-centred</span> way.',
+  },
+  {
+    name: "partijplein.nl",
+    url: "https://partijplein.nl",
+    year: "2023",
+    body: 'An effort to improve accessibility to election programs for the 2023 Dutch Elections by building <span class="hilite">semantic search</span> over their contents, in <span class="hilite">multiple languages</span>. Coverage: <a href="https://nos.nl/collectie/13958/artikel/2498580-partijprogramma-s-makkelijker-te-begrijpen-dankzij-nieuwe-site" class="link">NOS</a> &amp; <a href="https://www.at5.nl/artikelen/223568/verkiezingsprogrammas-begrijpelijker-maken-met-kunstmatige-intelligentie" class="link">AT5</a>. With <a href="https://khaledtamimy.nl/" class="link">Khaled Tamimy</a> &amp; <a href="https://lodder.dev" class="link">Paul Lodder</a>.',
+  },
+  {
+    name: "zonopjebakkes.nl",
+    url: "https://zonopjebakkes.nl",
+    year: "2022",
+    body: '<span class="hilite">Frontend &amp; app development</span> for a webapp showing which terraces are in the sun near you throughout the Netherlands, with <a href="https://lodder.dev" class="link">Paul Lodder</a> &amp; <a href="https://www.robschilder.com/" class="link">Rob Schilder</a>.',
+  },
+  {
+    name: "fxr",
+    url: "https://fxr-insights.com",
+    year: "2020—24",
+    body: '<span class="hilite">Data engineering</span> and <span class="hilite">full-stack web dev</span> for a startup designing scalable software to have creators gain insight and control of their royalty income.',
+  },
+  {
+    name: "pochola gum",
+    year: "2021—23",
+    body: '<span class="hilite">Designing</span> and <span class="hilite">producing</span> jewellery of polymer clay and aluminium.',
+  },
+  {
+    name: "primavera sí y sin",
+    url: "https://jpjagt.github.io/primavera-si-y-sin/",
+    year: "2022",
+    body: "I took pictures during the primavera festival in Barcelona and recreated those photos in the same spots half a year later, as a proposal to feature the project in the next edition.",
+  },
+  {
+    name: "generation NOW",
+    year: "2019—20",
+    body: '<span class="hilite">Full-stack web dev</span> for a carbon footprint reduction service with the mission of accelerating a cultural shift to fight back against climate change.',
+  },
+]
+
+const apps = [
+  {
+    name: "pager",
+    url: "/pager",
+    year: "2026",
+    body: "A soothing way to stay in touch with a friend.",
+  },
+  {
+    name: "cartelita",
+    url: "https://cartelita.july.dev/en",
+    year: "2026",
+    body: "A cultural calendar for Barcelona.",
+  },
+]
 ---
 
 <Main>
-  <div class="h-8 sm:h-32"></div>
+  <div class="mx-auto">
+    <div class="ledger">
+      <!-- bio (left) + contact links (right). The bio (name + paragraph) lives
+           in one tall left cell; the three links live in one right cell that
+           stacks them on consecutive bands, so they always sit on bands 1–3
+           regardless of how far the bio wraps. -->
+      <Row mt={5} smMt={2}>
+        <Cell col={1} span={7} smCol={1} smSpan={12} smRow={1}>
+          <span class="text-foreground cell-title block">July Jagt</span>
+          I craft things both digital and physical. I've worked in AI interface design, and am now focused on <a class="link" href="https://liminal.flowers">jewellery</a>, and novel forms of hardware. Born and raised in Amsterdam. I also make what you could call emo bedroom pop: have a listen to my debut album <a href="/pomegranate" class="link"
+                                              >Pomegranate</a
+                                                    >!
+        </Cell>
 
-  <div class="w-full flex justify-end pr-4 -ml-1.5">
-    <img
-      src="/images/july.jpg"
-      alt="an image of july!"
-      class="max-w-full w-40 md:w-64 h-auto rounded-2xl inline-block p-1.5 bg-card border border-border"
-    />
-  </div>
+        <Cell col={9} span={4} smCol={1} smSpan={12} smRow={2}>
+          <div class="contact-links">
+            <span class="md:text-right mr-3">mail</span>
+            <a href="mailto:yo@july.dev" class="link">yo@july.dev</a>
 
-  <div class="h-8 sm:h-12"></div>
+            <span class="md:text-right mr-3">x</span>
+            <a href="https://twitter.com/julymemo" class="link"><span class="no-underline inline-block">@</span>julymemo</a>
 
-  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
-    <h1 class="font-semibold text-foreground text-lg">
-      july jagt
-    </h1><span class="mx-2 hidden sm:inline-block text-muted-foreground">&middot;</span>
-    <h2>
-      design engineer. making &#123; ux, lamps, jewellery, <a
-        href="/pomegranate"
-        class="link">music</a
-      >
-      &#125;
-    </h2>
-  </div>
+            <span class="md:text-right mr-3">github</span>
+            <a href="https://github.com/jpjagt" class="link"><span class="no-underline inline-block">@</span>jpjagt</a>
+          </div>
+        </Cell>
+      </Row>
 
-  <div class="h-5 md:h-6"></div>
+      <!-- ── DIARY (authored from diary.org — see update note above) ── -->
 
-  <p>
-    I like to design beautiful things at the right level of complexity.
-  </p>
+      <Row mt={4} mb={1}>
+        <Cell col={COLS.body.col} span={COLS.body.span} smCol={1} smSpan={12} class="cell-header">
+          what i've been up to
+        </Cell>
+      </Row>
 
-  <div class="h-5 md:h-6"></div>
+      <!-- june 2026 -->
+      <Row mb={1} class="font-sans">
+        <Cell
+          col={COLS.title.col}
+          span={COLS.title.span}
+          smCol={1}
+          smSpan={12}
+          smRow={1}
+          class="cell-title"
+        >
+          june 2026
+        </Cell>
+        <Cell
+          col={COLS.body.col}
+          span={COLS.body.span}
+          smCol={1}
+          smSpan={12}
+          smRow={2}
+        >
+          We&rsquo;ve grown tired of smartphones. But what could be a new
+          direction for personal tech? <a
+            href="/a-new-page-for-personal-technology"
+            class="link">I wrote about what using an iPod taught me</a
+          >: our interactions should be single-purpose and intentional.
+        </Cell>
+      </Row>
+      <Row mb={1} class="font-sans">
+        <Cell col={COLS.body.col} span={COLS.body.span} smCol={1} smSpan={12}>
+          In the same vein, I created a macOS app called <a
+            href="/pager"
+            class="link">pager</a
+          > that allows you to send one message to someone&rsquo;s menu bar. It's super joyful.
+          I&rsquo;ve been using it for a few months, and it really gives you this feeling of putting a note in the
+          lunch-box of a loved one.
+        </Cell>
+      </Row>
+      <Row mb={1} class="font-sans">
+        <Cell col={COLS.body.col} span={COLS.body.span} smCol={1} smSpan={12}>
+          Spending time in Barcelona the past few months made me realize there
+          is just no good cultural event calendar, <a
+            href="https://cartelita.july.dev"
+            class="link">so I built one</a
+          >. It&rsquo;s strongly inspired by the amazing <a
+            href="https://jazzin.amsterdam"
+            class="link link-muted">jazzin.amsterdam</a
+          >.
+        </Cell>
+      </Row>
 
-  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
-    <p>
-      <span class="font-semibold mr-2 sm:mr-1">mail</span>
-      <a href="mailto:yo@july.dev" class="link">yo@july.dev</a>
-    </p>
+      <!-- apps & sites -->
+      <Row mt={4} mb={1}>
+        <Cell col={COLS.body.col} span={COLS.body.span} smCol={1} smSpan={12} class="cell-header">
+          apps &amp; sites i've made
+        </Cell>
+      </Row>
+      {apps.map((p) => <ProjectItem {...p} />)}
 
-    <Bull />
+      <!-- projects -->
+      <Row mt={4} mb={1}>
+        <Cell col={COLS.body.col} span={COLS.body.span} smCol={1} smSpan={12} class="cell-header">
+          previous projects & work
+        </Cell>
+      </Row>
+      {projects.map((p) => <ProjectItem {...p} />)}
 
-    <p>
-      <span class="font-semibold mr-2 sm:mr-1">x</span><a
-        href="https://twitter.com/julymemo"
-        class="link">@julymemo</a
-      >
-    </p>
-
-    <Bull />
-
-    <p>
-      <span class="font-semibold mr-2 sm:mr-1">github</span><a
-        href="https://github.com/jpjagt"
-        class="link">@jpjagt</a
-      >
-    </p>
-  </div>
-
-  <h3 class="header">apps & sites</h3>
-
-  <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
-    <ProjectPreview
-      name="pager"
-      url="/pager"
-      start={2026}
-    >
-    A soothing way to stay in touch with a friend.
-  </ProjectPreview>
-
-  <ProjectPreview
-    name="cartelita"
-    url="https://cartelita.july.dev/en"
-    start={2026}
-  >
-    A cultural calendar for Barcelona.
-  </ProjectPreview>
-  </div>
-
-  <h3 class="header">projects</h3>
-
-  <div class="grid grid-cols-1 sm:grid-cols-1 gap-x-8 gap-y-16">
-    <ProjectPreview
-      name="supernal ai"
-      url="https://getsupernal.ai"
-      start={2025}
-      end={2026}
-    >
-      Office work, sans the poor UX SaaS interfaces.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="social technology lab"
-      url="https://socialtechnologylab.com"
-      start={2024}
-      end={2025}
-    >
-      Technology, applied socially and ethically. We build software in a
-      thoughtful, selective, and <span class="hilite">human-centred</span> way.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="thescraperfactory"
-      img="thescraperfactory.jpg"
-      start={2024}
-    >
-      Building LLM-powered <span class="hilite">web scraper factories</span>,
-      automating the process of data extraction from the web, with <a
-        href="https://lodder.dev"
-        class="link">Paul Lodder</a
-      >.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="partijplein.nl"
-      url="https://partijplein.nl"
-      img="partijplein.png"
-      start={2023}
-    >
-      An effort to improve accessibility to election programs for the 2023 Dutch
-      Elections by building <span class="hilite">semantic search</span> over their
-      contents, in <span class="hilite">multiple languages</span>. Media
-      coverage: <a
-        href="https://nos.nl/collectie/13958/artikel/2498580-partijprogramma-s-makkelijker-te-begrijpen-dankzij-nieuwe-site"
-        class="link">NOS</a
-      > & <a
-        href="https://www.at5.nl/artikelen/223568/verkiezingsprogrammas-begrijpelijker-maken-met-kunstmatige-intelligentie"
-        class="link">AT5</a
-      >. With <a href="https://khaledtamimy.nl/" class="link">Khaled Tamimy</a> &
-      <a href="https://lodder.dev" class="link">Paul Lodder</a>.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="zonopjebakkes.nl"
-      url="https://zonopjebakkes.nl"
-      start={2022}
-    >
-      <span class="hilite">Frontend & app development</span> for a webapp showing
-      which terraces are in the sun near you throughout the Netherlands, with
-      <a href="https://lodder.dev" class="link">Paul Lodder</a> & <a
-        href="https://www.robschilder.com/"
-        class="link">Rob Schilder</a
-      >.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="fxr"
-      url="https://fxr-insights.com"
-      start={2020}
-      end={2024}
-    >
-      <span class="hilite">Data engineering</span> and <span class="hilite"
-        >full-stack web dev</span
-      > for a startup designing scalable software to have creators gain insight and
-      control of their royalty income.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="generation NOW"
-      img="generation-now.jpg"
-      start={2019}
-      end={2020}
-    >
-      <span class="hilite">Full-stack web dev</span> for a carbon footprint reduction
-      service with the mission of accelerating a cultural shift to fight back against
-      climate change.
-    </ProjectPreview>
-
-    <ProjectPreview name="pochola gum" img="pochola.png" start={2021} end="now">
-      <span class="hilite">Designing</span> and <span class="hilite"
-        >producing</span
-      > jewellery of polymer clay and aluminium.
-    </ProjectPreview>
-
-    <ProjectPreview
-      name="primavera sí y sin"
-      url="https://jpjagt.github.io/primavera-si-y-sin/"
-      img="primavera-si-y-sin.jpg"
-      start={2022}
-    >
-      I took <span class="hilite">pictures</span> during the primavera festival in
-      Barcelona and recreated those photos in the same spots half a year later. This
-      website was a proposal to the organisers of the primavera festival to feature
-      the project in the next edition.
-    </ProjectPreview>
-  </div>
-  <div class="h-32"></div>
-
-  <div class="flex items-center justify-center">
-    <pre
-      class="text-muted-foreground text-sm">
-     _._
-    (\!/)
-  (((|||)))
- ((//'~`\\))
-((!       !))
-((. o   o .))
- ))   J   ((
- ( \  -  / )
-   !`---'!
-  /'     `\
-</pre>
+      <Row mt={7} mb={2}>
+        <Cell col={1} span={12}>
+          That's all for now! Hope you enjoyed your visit.</Cell>
+        </Row>
+    </div>
   </div>
 </Main>
-
-<style>
-  .header {
-    @apply font-semibold text-lg mt-20 mb-6 text-foreground;
-  }
-</style>

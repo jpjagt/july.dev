@@ -1,1 +1,6 @@
 export { default as ProjectPreview } from './ProjectPreview.astro'
+export { default as Row } from './Row.astro'
+export { default as Cell } from './Cell.astro'
+export { default as ProjectItem } from './ProjectItem.astro'
+export { default as SiteHeader } from './SiteHeader.astro'
+export { default as ImageCell } from './ImageCell.astro'

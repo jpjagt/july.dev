@@ -1,0 +1,78 @@
+---
+// A ledger Cell that frames an image on a tinted panel: useful for logos /
+// artwork that would otherwise float awkwardly on the ruled sheet. The image
+// sits on a `bg` (a muted panel by default) with `pad` bands of padding so it
+// reads as a deliberate plate rather than a stray graphic.
+//
+// Placement props mirror <Cell> (col/span + responsive tiers). `pad` is in
+// ledger bands so the panel height stays a whole number of bands.
+import Cell from "@/components/Cell.astro"
+
+export interface Props {
+  src: string
+  alt?: string
+  col?: number
+  span?: number
+  mdCol?: number
+  mdSpan?: number
+  smCol?: number
+  smSpan?: number
+  smRow?: number
+  /** padding around the image, in ledger bands */
+  pad?: number
+  /** panel height in ledger bands — keeps the plate on the band grid so the
+      ruling never drifts. The image is centred and contained within. */
+  bands?: number
+  /** background utility classes for the panel */
+  bg?: string
+  /** extra classes for the <img> */
+  imgClass?: string
+  class?: string
+}
+
+const {
+  src,
+  alt = "",
+  col,
+  span,
+  mdCol,
+  mdSpan,
+  smCol,
+  smSpan,
+  smRow,
+  pad = 1,
+  bands = 4,
+  bg = "bg-transparent",
+  imgClass = "",
+  class: cls = "",
+} = Astro.props
+---
+
+<Cell
+  col={col}
+  span={span}
+  mdCol={mdCol}
+  mdSpan={mdSpan}
+  smCol={smCol}
+  smSpan={smSpan}
+  smRow={smRow}
+  class={`image-cell ${cls}`}
+>
+  <div
+    class:list={["image-cell-panel", bg]}
+    style={`height: calc(var(--band) * ${bands} - 2px); padding: calc(var(--band) * ${pad})`}
+  >
+    <img src={src} alt={alt} class:list={["image-cell-img", imgClass]} />
+  </div>
+</Cell>
+
+<style>
+  /* fixed band-multiple height keeps the plate on the ledger grid so the ruling
+     below never drifts; the image is contained + centred within the padding. */
+  .image-cell-panel {
+    @apply box-border w-full flex items-center justify-start;
+  }
+  .image-cell-img {
+    @apply block max-w-full max-h-full w-auto h-full object-contain;
+  }
+</style>

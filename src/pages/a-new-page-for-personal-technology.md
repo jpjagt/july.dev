@@ -1,6 +1,9 @@
 ---
+layout: "@/layouts/note.astro"
 title: a new page for personal technology
 createdAt: 2026-06-26
+status: published
+synopsis: I want all my technology to feel like an iPod.
 ---
 
 *(or: I want all my technology to feel like an iPod)*

@@ -1,0 +1,48 @@
+---
+// A ledger row: a 12-col grid that holds freely-placed <Cell>s.
+//
+// If `href` is set, the whole row becomes a hover-invert link via the
+// "stretched link" pattern: an overlay anchor (rendered in the default
+// slot by the caller, or here) covers the row so the entire band is
+// clickable — without wrapping the row in an <a> (nesting <a> inside the
+// description's links is invalid HTML and breaks the DOM).
+//
+// `mt` / `mb` add that many empty spacer bands above / below the row.
+// (An empty <Row> collapses to 0 height — it has no cell to give it a band —
+// so use these props for vertical spacing instead.)
+//
+// `smMt` / `smMb` override the count at ≤639px: spacers beyond the mobile
+// count carry `.row-spacer-md` and collapse to 0 height there, so mobile gets
+// tighter section spacing without a second set of rows.
+export interface Props {
+  href?: string | null
+  class?: string
+  mt?: number
+  mb?: number
+  smMt?: number
+  smMb?: number
+}
+
+const {
+  href = null,
+  class: cls = "",
+  mt = 0,
+  mb = 0,
+  smMt = mt,
+  smMb = mb,
+} = Astro.props
+
+// `i` is the spacer's index; spacers at index ≥ the mobile count are the
+// "extra" ones desktop wants but mobile doesn't, so mark them to collapse.
+const spacers = (n: number, smN: number) =>
+  Array.from({ length: n }, (_, i) => i >= smN)
+---
+
+{spacers(mt, smMt).map((extra) => <div class:list={["row-spacer", { "row-spacer-md": extra }]} />)}
+
+<div class:list={["row", cls, { "row-link": href }]}>
+  {href && <a href={href} class="row-stretch" aria-hidden="true" tabindex="-1" />}
+  <slot />
+</div>
+
+{spacers(mb, smMb).map((extra) => <div class:list={["row-spacer", { "row-spacer-md": extra }]} />)}

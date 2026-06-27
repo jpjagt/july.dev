@@ -1,0 +1,34 @@
+---
+// A shared ledger header row: "july.dev" with a "← home" link next to it.
+// Rendered as bare ledger Row(s) — NOT wrapped in its own .ledger — so it sits
+// inside each page's single full-bleed .ledger grid (note / pomegranate /
+// pager), keeping one continuous ruled sheet per page. Inherits the page's
+// theme tokens (e.g. .pager-page), so it recolours per page automatically.
+import Row from "@/components/Row.astro"
+import Cell from "@/components/Cell.astro"
+
+export interface Props {
+  /** empty spacer bands below the header row */
+  mb?: number
+}
+
+const { mb = 1 } = Astro.props
+---
+
+<Row mt={1} mb={mb}>
+  <Cell col={1} span={11} smCol={1} smSpan={12} class="cell-title flex flex-row">
+    <a href="/" class="link site-back shrink-0">&larr; home</a>
+    <div class="flex-1" />
+    <a href="/" class="site-home shrink-0">july.dev</a>
+  </Cell>
+</Row>
+
+<style>
+  .site-home {
+    @apply no-underline text-foreground;
+  }
+
+  .site-back {
+    @apply font-normal;
+  }
+</style>

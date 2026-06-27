@@ -1,0 +1,55 @@
+---
+// Places its content on the ledger's 12-col usable field.
+// `col` is the 1-based usable column (1–12); `span` is how many columns wide.
+// Omit `col` to let it flow naturally after the previous cell.
+//
+// Responsive: `mdCol`/`mdSpan` apply at ≤899px, `smCol`/`smSpan` at ≤639px,
+// each falling back to the next-larger tier when omitted. `smRow` pins the
+// cell to an explicit grid row at ≤639px (used to lay an item out as
+// "title … year" on row 1 and "body" on row 2 within one tappable Row).
+//
+// Placement is driven by CSS custom properties (not an inline grid-column) so
+// the media queries in globals.css can reflow cells without !important. The
+// underlying grid reserves an edge gutter on each side, so usable column N
+// maps to grid line N+1; that +1 is applied in the CSS.
+export interface Props {
+  col?: number
+  span?: number
+  mdCol?: number
+  mdSpan?: number
+  smCol?: number
+  smSpan?: number
+  smRow?: number
+  class?: string
+}
+
+const {
+  col,
+  span = 1,
+  mdCol,
+  mdSpan,
+  smCol,
+  smSpan,
+  smRow,
+  class: cls = "",
+} = Astro.props
+
+// Build the CSS-var style string, emitting only the vars that are set.
+const vars: Record<string, number | undefined> = {
+  "--cell-col": col,
+  "--cell-span": span,
+  "--cell-col-md": mdCol,
+  "--cell-span-md": mdSpan,
+  "--cell-col-sm": smCol,
+  "--cell-span-sm": smSpan,
+  "--cell-row-sm": smRow,
+}
+const style = Object.entries(vars)
+  .filter(([, v]) => v !== undefined)
+  .map(([k, v]) => `${k}:${v}`)
+  .join(";")
+---
+
+<div class={`cell ${cls}`} style={style}>
+  <slot />
+</div>

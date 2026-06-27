@@ -1,0 +1,28 @@
+---
+import Main from "@/layouts/main.astro"
+---
+
+<Main title="404 — not found">
+  <!-- full-height ledger sheet, no scroll; the ruling fills the viewport and
+       the message sits dead-centre. -->
+  <div class="ledger ledger-fill grid place-items-center text-center">
+    <div>
+      <p class="cell-title text-lg">404: not found</p>
+      <p class="mt-1">
+        <a href="/" class="link">return home</a>
+      </p>
+    </div>
+  </div>
+</Main>
+
+<style>
+  .ledger-fill {
+    /* fill the viewport exactly; no scrollbar */
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    /* the ledger draws top/bottom borders — drop them so the sheet reads as a
+       clean full-bleed page rather than a boxed band */
+    @apply border-y-0;
+  }
+</style>

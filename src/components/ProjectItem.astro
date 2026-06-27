@@ -1,0 +1,54 @@
+---
+// One entry in the apps / projects ledger sections: a single tappable Row
+// holding a title, an HTML body blurb, and a year.
+//
+// Desktop (≥900px): title | body | year across one band (cols 1‑2 / 3‑9 / 10‑12).
+// Mobile (≤639px): "title … year" share band 1 (title left, year right), and
+// the body drops to band 2 full‑width — all still inside one <Row href> so the
+// whole item stays a single tappable target.
+import Row from "@/components/Row.astro"
+import Cell from "@/components/Cell.astro"
+
+export interface Props {
+  name: string
+  url?: string
+  year: string
+  /** HTML string (may contain <a>, <span class="hilite">, …) */
+  body: string
+}
+
+const { name, url, year, body } = Astro.props
+---
+
+<Row href={url} mb={1}>
+  <Cell
+    col={1}
+    span={2}
+    smCol={1}
+    smSpan={8}
+    smRow={1}
+    class="cell-title"
+  >
+    {
+      url ? (
+        <>
+          <span class="item-name">{name}</span>
+          <span class="item-arrow">&#8599;</span>
+        </>
+      ) : (
+        name
+      )
+    }
+  </Cell>
+  <Cell col={3} span={7} smCol={1} smSpan={12} smRow={2} set:html={body} />
+  <Cell
+    col={10}
+    span={3}
+    smCol={9}
+    smSpan={4}
+    smRow={1}
+    class="muted text-right font-sans"
+  >
+    {year}
+  </Cell>
+</Row>
