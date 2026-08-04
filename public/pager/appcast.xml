@@ -3,12 +3,28 @@
     <channel>
         <title>Pager</title>
         <item>
-            <title>0122cc9</title>
-            <pubDate>Thu, 25 Jun 2026 11:43:21 +0200</pubDate>
-            <sparkle:version>43</sparkle:version>
-            <sparkle:shortVersionString>v0.1.2</sparkle:shortVersionString>
+            <title>v0.1.1-29-gd8b813e</title>
+            <pubDate>Tue, 04 Aug 2026 16:53:04 +0400</pubDate>
+            <sparkle:version>61</sparkle:version>
+            <sparkle:shortVersionString>v0.1.1-29-gd8b813e</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://july.dev/pager/Pager.zip" length="1968480" type="application/octet-stream" sparkle:edSignature="12QSQmBWMQtNw6KMztVkLoff5v3xuBdb0Z3s0FlS2ZMrCS8OPKTtKvaVQ2TFzeleE9bZRxUy4iH9Hm5R9hNBCA=="/>
+            <enclosure url="https://july.dev/pager/Pager.zip" length="2096262" type="application/octet-stream" sparkle:edSignature="hN57UISBaTJYjSo0rI2GexZQZx0N+oFF5w+6AGiKG46MuTu5x+8aNSzhMURO3zITRsOR4gmGIXEF1IKl5swEAQ=="/>
+        </item>
+        <item>
+            <title>v1.0.0</title>
+            <pubDate>Tue, 23 Jun 2026 18:11:15 +0200</pubDate>
+            <sparkle:version>32</sparkle:version>
+            <sparkle:shortVersionString>v0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://july.dev/pager/Pager.zip" length="1966546" type="application/octet-stream" sparkle:edSignature="xqcwAwxwxdWKkVb5xxFfIb86iFuXMQclcPmb3NwtKDmredVzBzPh0hishkfp9hkZ/hNDutfv0KoNocCCpyWiAg=="/>
+        </item>
+        <item>
+            <title>b3d8883</title>
+            <pubDate>Tue, 23 Jun 2026 18:00:12 +0200</pubDate>
+            <sparkle:version>31</sparkle:version>
+            <sparkle:shortVersionString>b3d8883</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://july.dev/pager/Pager.zip" length="1957466" type="application/octet-stream" sparkle:edSignature="FR3Evv767ESx7r41OHv4xdeuahqLx5shj7kT/q4upLk1ya7tuQIl9lPeWLmoLzXpgGxe19FfaSji20dNpKCACw=="/>
         </item>
     </channel>
 </rss>
