@@ -3,6 +3,14 @@
     <channel>
         <title>Pager</title>
         <item>
+            <title>v0.4.1</title>
+            <pubDate>Thu, 13 Aug 2026 15:22:07 +0400</pubDate>
+            <sparkle:version>121</sparkle:version>
+            <sparkle:shortVersionString>v0.4.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://july.dev/pager/Pager.zip" length="3599830" type="application/octet-stream" sparkle:edSignature="dVs+OSRYL22+CdTVs3QG+ALJ5NDPQeJFlbbsiyh9d6pCX71TVp6FswwAaMNyOq1QDQTRmJ18OSIA/CXTcly8Ag=="/>
+        </item>
+        <item>
             <title>v0.4.0</title>
             <pubDate>Tue, 11 Aug 2026 14:30:47 +0400</pubDate>
             <sparkle:version>119</sparkle:version>
@@ -17,14 +25,6 @@
             <sparkle:shortVersionString>v0.3.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
             <enclosure url="https://july.dev/pager/Pager.zip" length="2463966" type="application/octet-stream" sparkle:edSignature="ESoSXNhoEnEJFWiUGW2viH1KkpH0AmHl4ICmqKI6fRH1q/FZuPbIHyowEFrTnbwYH0J3KZuRZc+PTLjMTxbuBQ=="/>
-        </item>
-        <item>
-            <title>v0.2.0</title>
-            <pubDate>Tue, 04 Aug 2026 17:04:27 +0400</pubDate>
-            <sparkle:version>63</sparkle:version>
-            <sparkle:shortVersionString>v0.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://july.dev/pager/Pager.zip" length="2096258" type="application/octet-stream" sparkle:edSignature="wFKzsEVE0vkRDsRJ6QCfIR/KDy3VSQDsrUmd6qnArDaar1x6B54gvE1WftMw4eidelKO4Y3aE//t9WbFtntFAw=="/>
         </item>
     </channel>
 </rss>
