@@ -1,3 +1,19 @@
+* october 2026
+
+Since July, I've been working on a device whose aim it is to provide one
+essential feature of our smartphones (async communication), without all of the
+distraction. I have a working prototype, yay! And using it, [I felt how it
+helped me retain uninterrupted flow of thoughts].
+
+It makes me very motivated to keep working on this. It's sad to think how rare
+it has become to experience a mind that's not craving random pieces of external
+information all the time. Our continuous desire for a device to tell us what to
+think about next is strange and exhausting!
+
+** projects
+
+- attention / presence of mind post: /attention
+
 * june 2026
 
 We've grown tired of smartphones. But what could be a new direction for
@@ -10,11 +26,11 @@ with a person I'm seeing, and it really gives you this feeling of putting a
 note in the lunch-box of a loved one.
 
 Spending time in Barcelona the past few months made me realize there is just no
-good cultural event calendar, [so I built one]. It's strongly inspired by
-[jazzin.amsterdam].
+good cultural event calendar, so I built one at [cartelita.co]! It's strongly
+inspired by the great [jazzin.amsterdam].
 
 ** projects
 
 - writing: /a-new-page-for-personal-technology
 - pager: pager, /pager
-- event calendar: cartelita, https://cartelita.july.dev
+- event calendar: cartelita, https://cartelita.co

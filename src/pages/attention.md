@@ -6,9 +6,7 @@ status: published
 synopsis: the presence of mind one has without a phone is amazing
 ---
 
-I had something very interesting happen to me tonight.
-
-I was watching _Summer Palace_ by Lou Ye. When it ended, I felt like telling
+Tonight I watched _Summer Palace_ by Lou Ye. When it ended, I felt like telling
 the person I'm seeing about it, and naturally that provoked the urge to grab my
 phone. But instead, I figured I could take my audiopager, and record a message
 to her there. I spent around five minutes lying on the couch and voicing my
