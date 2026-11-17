@@ -85,7 +85,7 @@
     box-shadow: 0 1px 0 #ffffff33 inset, 0 -3px 0 #00000059 inset, 0 3px 0 #0000008c, 0 6px 9px #00000040; }
   .btn.on { transform: translateY(2px); box-shadow: 0 1px 0 #ffffff1a inset, 0 -1px 0 #00000059 inset, 0 1px 0 #0000008c; }
   #a { right: 0; top: 2px; }
-  #b { left: 4px; top: 48px; }
+  #b { left: 13px; top: 42px; }
 
   .small { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 8px; }   /* mute and settings, side by side at the foot of the case */
   .cog { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--key-edge);
@@ -225,25 +225,29 @@
     '>': '#...#...#.#.#..', ' ': '...............',
   };
   for (const k in FONT) if (FONT[k].length !== 15) throw new Error('glyph ' + k);
+  /* marks for menus and signs, never part of a name */
+  const MARKS_FONT = { '(': '.#.#..#..#...#.', ')': '.#...#..#..#.#.', ',': '..........#.#..', '/': '..#..#.#.#..#..', '<': '..#.#.#...#...#', '_': '............###' };
+  for (const k in MARKS_FONT) if (MARKS_FONT[k].length !== 15) throw new Error('mark ' + k);
 
-  /* ---- characters: 12x16, '#' dark, 'o' light, 'h' hair, 'x' shirt ---- */
+  /* ---- characters: 12x16. '#' outline, 'h' hair, 'f' skin, 'e' eyes, 'x' shirt, 'l' legs ---- */
   const HEAD_TOP = ['...######...', '..#hhhhhh#..', '.#hhhhhhhh#.'];
   const HEAD = {
-    d: ['.#hooooooh#.', '.#oo#oo#oo#.', '.#oooooooo#.', '..#oooooo#..', '...######...'],
+    d: ['.#hffffffh#.', '.#ffeffeff#.', '.#ffffffff#.', '..#ffffff#..', '...######...'],
     u: ['.#hhhhhhhh#.', '.#hhhhhhhh#.', '.#hhhhhhhh#.', '..#hhhhhh#..', '...######...'],
-    r: ['.#hhhooooo#.', '.#hhoooo#o#.', '.#hhoooooo#.', '..#hooooo#..', '...######...'],
+    r: ['.#hhhfffff#.', '.#hhffffef#.', '.#hhffffff#.', '..#hfffff#..', '...######...'],
   };
-  const BODY_FRONT = ['..#xxxxxx#..', '.#o#xxxx#o#.', '.#o#xxxx#o#.', '..##xxxx##..', '...#xxxx#...'];
-  const BODY_SIDE = ['...#xxxx#...', '...#xxxx#...', '...#xxoo#...', '...#xxxx#...', '....####....'];
+  /* a head of eight rows, a body of four, legs of four: the legs were a row shorter and looked stubby */
+  const BODY_FRONT = ['..#xxxxxx#..', '.#f#xxxx#f#.', '..##xxxx##..', '...#xxxx#...'];
+  const BODY_SIDE = ['...#xxxx#...', '...#xxff#...', '...#xxxx#...', '....####....'];
   const LEGS = {
     front: [
-      ['...#o##o#...', '...#o##o#...', '...##..##...'],
-      ['...#o##o#...', '...##.#o#...', '......##....'],
-      ['...#o##o#...', '...#o#.##...', '....##......'],
+      ['...#l##l#...', '...#l##l#...', '...#l##l#...', '...##..##...'],
+      ['...#l##l#...', '...#l##l#...', '...##.#l#...', '......##....'],
+      ['...#l##l#...', '...#l##l#...', '...#l#.##...', '....##......'],
     ],
     side: [
-      ['....#oo#....', '....#oo#....', '....####....'],
-      ['...#o##o#...', '..#o#..#o#..', '..##....##..'],
+      ['....#ll#....', '....#ll#....', '....#ll#....', '....####....'],
+      ['....#ll#....', '...#l##l#...', '..#l#..#l#..', '..##....##..'],
     ],
   };
   function build(head, body, legs) {
@@ -252,10 +256,13 @@
     if (rows.length !== 16) throw new Error('sprite height');
     return rows;
   }
-  const SIT = HEAD_TOP.concat(HEAD.d, ['..#xxxxxx#..', '.#o#xxxx#o#.', '.##xxxxxx##.', '.#oo####oo#.', '.####..####.']);
+  const SIT = HEAD_TOP.concat(HEAD.d, ['..#xxxxxx#..', '.#f#xxxx#f#.', '.##xxxxxx##.', '.#ll####ll#.', '.####..####.']);
   SIT.forEach((r) => { if (r.length !== 12) throw new Error('sit row "' + r + '"'); });
-  const SIT_SIDE = HEAD_TOP.concat(HEAD.r, ['...#xxxx#...', '...#xxoo#...', '...#xxxx####', '...###ooooo#', '........#o#.', '........###.']);
+  const SIT_SIDE = HEAD_TOP.concat(HEAD.r, ['...#xxxx#...', '...#xxff#...', '...#xxxx####', '...###lllll#', '........#l#.', '........###.']);
   SIT_SIDE.forEach((r) => { if (r.length !== 12) throw new Error('side sit row "' + r + '"'); });
+  /* sitting with your back to us */
+  const SIT_BACK = HEAD_TOP.concat(HEAD.u, ['..#xxxxxx#..', '.##xxxxxx##.', '.##xxxxxx##.', '.#ll####ll#.', '.####..####.']);
+  SIT_BACK.forEach((r) => { if (r.length !== 12) throw new Error('back sit row "' + r + '"'); });
   const CHAR = {
     d: LEGS.front.map((l) => build(HEAD.d, BODY_FRONT, l)),
     u: LEGS.front.map((l) => build(HEAD.u, BODY_FRONT, l)),
@@ -301,7 +308,7 @@
   function text(x, y, s, c) {
     s = s.toUpperCase();
     for (let k = 0; k < s.length; k++) {
-      const g = FONT[s[k]] || FONT[' '];
+      const g = FONT[s[k]] || MARKS_FONT[s[k]] || FONT[' '];
       for (let i = 0; i < 15; i++) if (g[i] === '#') px(x + k * 4 + (i % 3), y + ((i / 3) | 0), c);
     }
   }
@@ -461,14 +468,69 @@
   };
   const SOLID = { tree: [1, 1], lamp: [1, 1], bench: [1, 1], fountain: [2, 2], stall: [2, 1] };
 
+  /* A look is one byte, two bits a part:
+   *   hair (bits 0-1): dark and short, fair and short, dark and long, a cap
+   *   face (bits 2-3): eyes, sunglasses, flat eyes, smiling eyes
+   *   shirt (bits 4-5): dark, light, striped, dark with a light front
+   *   legs (bits 6-7): light trousers, dark trousers, shorts, a skirt
+   * dress() turns a sheet of part letters into plain dark and light for one look. dir is 'd', 'u'
+   * or 'r' (left is right mirrored). */
+  const DRESSED = new Map();
+  function dress(rows, look, dir) {
+    const hair = look & 3, face = (look >> 2) & 3, shirt = (look >> 4) & 3, legs = (look >> 6) & 3;
+    const skin = 'o';
+    const firstLeg = rows.findIndex((r) => r.includes('l')), eyes = rows.findIndex((r) => r.includes('e'));
+    const out = rows.map((row, j) => row.split('').map((ch, i) => {
+      if (ch === 'h') return hair === 1 ? 'o' : hair === 3 ? (j < 3 ? '#' : skin) : '#';
+      if (ch === 'f') return skin;
+      if (ch === 'e') return skin;   /* the eyes are drawn below, by the face chosen */
+      if (ch === 'x') return shirt === 0 ? '#' : shirt === 1 ? 'o' : shirt === 2 ? (j & 1 ? '#' : 'o') : (i === 5 || i === 6 ? 'o' : '#');
+      if (ch === 'l') return legs === 1 ? '#' : legs === 2 ? (j === firstLeg ? '#' : skin) : 'o';
+      return ch;
+    }));
+    const put = (j, a, b, c) => { for (let i = a; i <= b; i++) if (out[j] && out[j][i] !== undefined) out[j][i] = c; };
+    if (eyes >= 0) {
+      const E = eyes, dot = (j, i) => put(j, i, i, '#');
+      if (dir === 'r') {
+        if (face === 0) dot(E, 8);                                                    /* an eye */
+        else if (face === 1) { put(E, 5, 9, '#'); put(E + 1, 7, 8, '#'); }            /* sunglasses, and their arm */
+        else if (face === 2) put(E, 7, 8, '#');                                       /* a flat eye */
+        else { dot(E, 8); dot(E + 1, 7); dot(E + 1, 9); }                             /* a smiling eye */
+      } else {
+        if (face === 0) { dot(E, 4); dot(E, 7); }
+        else if (face === 1) { put(E, 3, 8, '#'); put(E + 1, 3, 4, '#'); put(E + 1, 7, 8, '#'); }
+        else if (face === 2) { put(E, 3, 4, '#'); put(E, 7, 8, '#'); }
+        else { dot(E, 4); dot(E, 7); dot(E + 1, 3); dot(E + 1, 5); dot(E + 1, 6); dot(E + 1, 8); }
+      }
+    }
+    if (hair === 2) {                                    /* long hair: down past the face to the shoulders */
+      if (dir === 'd') { for (let j = 4; j <= 7; j++) { put(j, 2, 2, '#'); put(j, 9, 9, '#'); } put(8, 1, 2, '#'); put(8, 9, 10, '#'); }
+      else if (dir === 'u') { put(7, 3, 8, '#'); put(8, 2, 9, '#'); put(9, 4, 7, '#'); }
+      else { for (let j = 5; j <= 8; j++) put(j, 2, 3, '#'); }
+    }
+    if (hair === 3) {                                    /* a cap: its peak over the brow */
+      if (dir === 'd') put(3, 1, 10, '#'); else if (dir === 'r') put(3, 2, 11, '#');
+    }
+    if (legs === 3 && firstLeg >= 0 && rows.length === 16) put(firstLeg, dir === 'r' ? 3 : 2, dir === 'r' ? 8 : 9, '#');   /* a skirt */
+    return out.map((r) => r.join(''));
+  }
+  /* the dressed sprite: dir 'd', 'u', 'r' (which way it faces, sitting too); frame as in CHAR; sit: 0 standing, else seated */
+  function figure(look, dir, frame, sit) {
+    const key = look + '|' + dir + '|' + frame + '|' + (sit || 0);
+    if (!DRESSED.has(key)) DRESSED.set(key, sit ? dress(dir === 'r' ? SIT_SIDE : dir === 'u' ? SIT_BACK : SIT, look, dir) : dress(CHAR[dir][frame], look, dir));
+    return DRESSED.get(key);
+  }
+  /* a character without a look of its own (the old bots: dark or fair hair, dark or light shirt) */
+  function lookFor(c) { return typeof c.look === 'number' ? c.look & 255 : (c.hair ? 0 : 1) | ((c.shirt ? 0 : 1) << 4); }
+
   function person(c, t) {
-    const set = c.dir === 'l' ? CHAR.r : CHAR[c.dir || 'd'];
-    const n = set.length, beat = (t / (c.run ? 90 : 160)) | 0;
-    const f = c.moving ? (n === 2 ? beat % 2 : 1 + beat % 2) : 0;
-    const rows = c.sit === 2 ? SIT_SIDE : c.sit ? SIT : set[f], flip = c.sit === 2 ? !!c.flip : !c.sit && c.dir === 'l';
-    const map = { h: c.hair ? '#' : 'o', x: c.shirt ? '#' : 'o' };
-    if (c.bob) { sprite(c.x, c.y + 8, rows.slice(8), flip, map); sprite(c.x, c.y + 1, rows.slice(0, 8), flip, map); }
-    else sprite(c.x, c.y, rows, flip, map);
+    /* someone seated faces the way they turned, or else the way the seat does: out from the wall on a couch, towards us on a cushion */
+    const facing = c.sit ? c.facing || (c.sit === 2 ? (c.flip ? 'l' : 'r') : 'd') : c.dir || 'd';
+    const dir = facing === 'l' ? 'r' : facing, n = CHAR[dir].length, beat = (t / (c.run ? 90 : 160)) | 0;
+    const f = c.moving && !c.sit ? (n === 2 ? beat % 2 : 1 + beat % 2) : 0;
+    const rows = figure(lookFor(c), dir, f, c.sit || 0), flip = facing === 'l';
+    if (c.bob) { sprite(c.x, c.y + 8, rows.slice(8), flip); sprite(c.x, c.y + 1, rows.slice(0, 8), flip); }
+    else sprite(c.x, c.y, rows, flip);
   }
   function tag(c) {
     if (!c.name) return;
@@ -590,14 +652,14 @@
 
   function create(mode, seed) {
     const world = mode === '1d' ? makeStreet() : makeTown();
-    const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, idle: 0, pulse: 0, nod: [0, 0, 0], woke: false, t: 0, acc: 0, last: null,
-      p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, hair: 1, shirt: 1, name: '' }, bots: [],
+    const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, facing: null, heldB: false, idle: 0, pulse: 0, nod: [0, 0, 0], woke: false, t: 0, acc: 0, last: null,
+      p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, look: 0, name: '' }, bots: [],
       others: [], counts: null };   /* multiplayer (net.js): the other players to draw {name, hair, shirt, x, y, dir, moving, run, inside, seat}, and listeners per station */
     if (mode === '1d') { st.p.x = 28; st.p.y = doorSpot(world.houses[0]).y; }
     else st.p.x += 8; /* the middle of the avenue, NTS 1 and 2 either side, the fountain below */
     BOTS.forEach(([name, hair, shirt], k) => {
       const hs = world.houses[(rng(st) * world.houses.length) | 0], [tx, ty] = doorTile(hs);
-      st.bots.push({ name, hair, shirt, tx, ty, x: tx * T + 2, y: ty * T - 2, dir: 'd', moving: false, house: hs.i,
+      st.bots.push({ name, hair, shirt, look: (k * 89 + 23) & 255, tx, ty, x: tx * T + 2, y: ty * T - 2, dir: 'd', moving: false, house: hs.i,
         state: k % 2 ? 'in' : 'idle', wait: 20 + ((rng(st) * 400) | 0), path: [] });
     });
     return st;
@@ -666,15 +728,19 @@
     if (sy) p.dir = sy > 0 ? 'd' : 'u';
     if (sx) p.dir = sx > 0 ? 'r' : 'l';
     st.t += STEP_MS;
+    const pressedB = !!keys.run && !st.heldB; st.heldB = !!keys.run;   /* B, once a press */
     st.nod = [st.pulse > 0.45 ? 1 : 0, st.nod[0], st.nod[1]];   /* the kick now, a step ago, two steps ago: heads nod in three groups */
     if (st.inside >= 0) {
       p.run = false; /* no sprinting indoors */
       const lay = layout(st.inside);
       st.idle = p.moving ? 0 : st.idle + 1;
       if (st.seat >= 0) {
-        /* seated: the cross does nothing, A stands you up where you stood before */
-        p.moving = false; p.dir = 'd';
-        if (action) { st.seat = -1; p.x = st.from.x; p.y = st.from.y; p.dir = st.from.dir; st.idle = 0; }   /* back where you stood */
+        /* seated: the cross turns you to face any of the four ways; A or B stands you up where you stood before */
+        const fx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), fy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+        if (fx) st.facing = fx > 0 ? 'r' : 'l'; else if (fy) st.facing = fy > 0 ? 'd' : 'u';
+        if (fx || fy) st.idle = 0;
+        p.moving = false;
+        if (action || pressedB) { st.seat = -1; st.facing = null; p.x = st.from.x; p.y = st.from.y; p.dir = st.from.dir; st.idle = 0; }   /* back where you stood */
       } else {
         const nx = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * SPEED));
         const ny = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * SPEED));
@@ -689,7 +755,7 @@
           if (!taken.has(k) && dx <= 16 && dy <= 18 && dx + dy < best) { best = dx + dy; seat = k; }
         });
         const byDoor = p.y >= 84 && Math.abs(p.x + 6 - 64) <= 20;
-        if (seat >= 0) { st.from = { x: p.x, y: p.y, dir: p.dir }; st.seat = seat; st.idle = 0; p.moving = false; }
+        if (seat >= 0) { st.from = { x: p.x, y: p.y, dir: p.dir }; st.facing = null; st.seat = seat; st.idle = 0; p.moving = false; }
         else if ((action && (!two || byDoor)) || (two && keys.down && p.y >= ROOM.maxY && byDoor)) {
           /* inside is a station, and the town's houses are not in station order */
           const d = doorSpot(st.world.houses.find((hs) => hs.i === st.inside));
@@ -1003,7 +1069,7 @@
     }
     rect(52, 113, 24, 6, 1); for (let x = 54; x < 75; x += 4) rect(x, 114, 2, 4, 0);
     /* people: the listeners on their seats, and you */
-    const seated = (k, who) => ({ x: L.seats[k][0], y: L.seats[k][1], sit: L.seats[k][2], flip: L.seats[k][3], bob: st.nod[k % 3], hair: who.hair, shirt: who.shirt, name: who.name });
+    const seated = (k, who) => ({ x: L.seats[k][0], y: L.seats[k][1], sit: L.seats[k][2], flip: L.seats[k][3], bob: st.nod[k % 3], look: lookFor(who), facing: who === st.p ? st.facing : who.facing, name: who.name });
     const draw = sitters(st).map(([k, b]) => seated(k, b));
     for (const o of st.others) if (o.inside === i && o.seat < 0) draw.push(o);   /* real players on their feet in here */
     draw.push(st.seat >= 0 ? seated(st.seat, st.p) : Object.assign({}, st.p, { bob: st.nod[1] && !st.p.moving && st.idle > 54 }));
@@ -1051,9 +1117,13 @@
   }
 
   /* the scene's pen, for what the page draws over a frame (its menu): pixels, boxes, the 3x5 font */
-  const gfx = { on(out) { fb = out; cx = cy = 0; }, rect, box, px, text, textW };
+  const gfx = { on(out) { fb = out; cx = cy = 0; }, rect, box, px, text, textW,
+    /* a sprite's rows at a whole-number scale */
+    rows(x, y, rows, scale) {
+      rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#' || r[i] === 'o') rect(x + i * scale, y + j * scale, scale, scale, r[i] === '#' ? 1 : 0); });
+    } };
 
-  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, gfx, layout, sound, atDoor, nearest, doorSpot,
+  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, gfx, figure, layout, sound, atDoor, nearest, doorSpot,
     ROOM, SPEED, SPRINT, feetBlocked, onSeating: (lay, x, y) => onSeating(lay, x, y) };   /* the last row: what the multiplayer server checks moves against */
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Street = api;
 })(typeof self !== 'undefined' ? self : this);
@@ -1148,9 +1218,8 @@
     for (let k = 0; k < s.length; k++) { h ^= s.charCodeAt(k); h = Math.imul(h, 0x01000193); }
     return h >>> 0;
   }
-  /* a look is one byte: bit 0 hair, bit 1 shirt, the rest kept for later */
-  function defaultLook(pid) { return fnv(String(pid)) & 3; }
-  function lookOf(hair, shirt) { return (hair ? 1 : 0) | (shirt ? 2 : 0); }
+  /* a look is one byte, four parts of two bits: hair, face, shirt, legs (street.js draws it). Until one is chosen it follows from the id. */
+  function defaultLook(pid) { return fnv(String(pid)) & 255; }
 
   /* what the page and the server must agree on to share a town: the tiles, the houses, the
    * stations in their order, and every room's seats and furniture. S is street.js. */
@@ -1162,7 +1231,7 @@
   }
 
   const api = { VERSION, POS, SNAP, COUNTS, OUT, TICK_MS, MAX_SEATS, DIRS, flagsOf, readFlags, encodePos, decodePos, encodeSnap, decodeSnap,
-    encodeCounts, decodeCounts, typeOf, cleanName, fnv, defaultLook, lookOf, mapHash };
+    encodeCounts, decodeCounts, typeOf, cleanName, fnv, defaultLook, mapHash };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Proto = api;
 })(typeof self !== 'undefined' ? self : this);
 </script>
@@ -1193,8 +1262,8 @@
     const ents = new Map();    /* id -> { samples, shown, out } */
 
     function add(id, name, look) {
-      const e = ents.get(id) || { samples: [], shown: null, out: { id, name: '', hair: 0, shirt: 0, x: 0, y: 0, dir: 'd', moving: false, run: false, inside: -1, seat: -1 } };
-      e.out.name = name; e.out.hair = look & 1; e.out.shirt = (look >> 1) & 1;
+      const e = ents.get(id) || { samples: [], shown: null, out: { id, name: '', look: 0, facing: null, x: 0, y: 0, dir: 'd', moving: false, run: false, inside: -1, seat: -1 } };
+      e.out.name = name; e.out.look = look & 255;   /* hair, face, shirt, legs: two bits each (street.js, dress) */
       ents.set(id, e);
     }
     function remove(id) { ents.delete(id); }
@@ -1244,6 +1313,7 @@
         }
         e.shown = { x, y, inside: to.inside, seat: to.seat };
         o.x = x; o.y = y; o.inside = to.inside; o.seat = to.seat; o.dir = to.dir; o.run = to.run; o.moving = to.moving || chasing;
+        o.facing = to.seat >= 0 ? to.dir : null;   /* seated, the direction sent is the way they have turned */
         list.push(o);
       }
       return list;
@@ -1265,15 +1335,21 @@
     let ws = null, st = null, name = o.name || '', look = o.look | 0;
     let offset = null, tickMs = P.TICK_MS, counts = null, self = -1, shownCounts = null;
     let sent = null, sentAt = 0, lastMsg = 0, lastApply = null, retry = 1000, retryTimer = null, watch = null, noRetry = false;
-    const due = { in: 0, out: 0 };
+    const line = { in: { due: 0, q: [], timer: null }, out: { due: 0, q: [], timer: null } };
 
+    /* the bad line: each direction is a queue with one timer, so messages are late but never out of order */
     function held(dir, fn) {
       if (!lag && !jitter && !stall) return fn();
-      const now = clock();
-      let at = Math.max(due[dir], now + lag + Math.random() * jitter);
+      const l = line[dir], now = clock();
+      let at = Math.max(l.due, now + lag + Math.random() * jitter);
       if (stall && at % stallEvery < stall) at += stall - at % stallEvery;
-      due[dir] = at;
-      setTimeout(fn, at - now);
+      l.due = at; l.q.push({ at, fn });
+      if (!l.timer) l.timer = setTimeout(() => pump(l), at - now);
+    }
+    function pump(l) {
+      l.timer = null;
+      while (l.q.length && l.q[0].at <= clock() + 0.5) l.q.shift().fn();
+      if (l.q.length) l.timer = setTimeout(() => pump(l), Math.max(0, l.q[0].at - clock()));
     }
     function emit(sock, data) { held('out', () => { if (sock === ws && sock.readyState === 1) sock.send(data); }); }
 
@@ -1329,12 +1405,14 @@
       }
       let m;
       try { m = JSON.parse(data); } catch (e) { return; }
+      if (!m || typeof m !== 'object') return;
       if (m.t === 'welcome') { net.status = 'on'; net.id = m.id; tickMs = m.tickMs || P.TICK_MS; retry = 1000; sent = null; }
       else if (m.t === 'see') {
-        for (const id of m.del || []) interp.remove(id);
-        for (const [id, n, l] of m.add || []) interp.add(id, n, l);
-      } else if (m.t === 'who') { if (interp.ents.has(m.id)) interp.add(m.id, m.name, m.look); }
-      else if (m.t === 'unseat') { if (st && st.seat >= 0) { st.seat = -1; st.idle = 0; } }   /* someone sat there first */
+        for (const id of Array.isArray(m.del) ? m.del : []) interp.remove(id);
+        /* a name is drawn only as the page's own rule allows, whatever a server sends */
+        for (const e of Array.isArray(m.add) ? m.add : []) if (Array.isArray(e)) interp.add(e[0] | 0, P.cleanName(e[1], S.FONT), e[2] & 255);
+      } else if (m.t === 'who') { if (interp.ents.has(m.id)) interp.add(m.id, P.cleanName(m.name, S.FONT), m.look & 255); }
+      else if (m.t === 'unseat') { if (st && st.seat >= 0) { st.seat = -1; st.facing = null; st.idle = 0; } }   /* someone sat there first */
       else if (m.t === 'bye') {
         net.why = m.why;
         /* a full town may have room later; an old page, a second tab or a ban will not get better by asking again */
@@ -1354,11 +1432,17 @@
     };
     net.detach = function () { clearInterval(watch); watch = null; clearTimeout(retryTimer); net.status = 'off'; close(); st = null; };
 
+    /* the direction to report: on your feet, the way you face; seated, the way you have turned (else the seat's own: a couch faces the room, a cushion the door) */
+    function facingOf(scene) {
+      if (scene.seat < 0) return scene.p.dir;
+      const q = S.layout(scene.inside).seats[scene.seat];
+      return scene.facing || (q && q[2] === 2 ? (q[3] ? 'l' : 'r') : 'd');
+    }
     /* report where you are, if that changed (and now and then anyway, so the server knows you are there) */
     net.send = function (scene, now) {
       if (net.status !== 'on' || scene !== st) return;
       const p = scene.p, cur = { x: Math.max(0, Math.min(65535, p.x | 0)), y: Math.max(0, Math.min(65535, p.y | 0)),
-        flags: P.flagsOf(p.dir, p.moving, p.run, scene.seat), inside: scene.inside };
+        flags: P.flagsOf(facingOf(scene), p.moving, p.run, scene.seat), inside: scene.inside };
       if (sent && sent.x === cur.x && sent.y === cur.y && sent.flags === cur.flags && sent.inside === cur.inside && now - sentAt < 2000) return;
       sent = cur; sentAt = now;
       emit(ws, P.encodePos(cur));
@@ -1405,6 +1489,528 @@
 })(typeof self !== 'undefined' ? self : this);
 </script>
 <script>
+/* stream.js: a radio stream played without a media element, for the browsers where a page cannot
+ * set an element's loudness (iOS). The stream is fetched, cut into its MP3 or AAC (ADTS) frames,
+ * decoded a second at a time with decodeAudioData, and the pieces are scheduled back to back
+ * through a gain of our own. The fade and the volume are then ours.
+ *
+ * Joins. A piece decoded on its own starts badly (MP3 leans on earlier frames, every codec has a
+ * decoder delay), so each piece is decoded with the last quarter second of the one before it in
+ * front. The same audio then exists twice, at the end of one buffer and near the start of the
+ * next; the two are lined up to the sample by correlation and cross-faded over 5 ms. That does
+ * not depend on how many samples a browser's decoder adds or drops at the ends.
+ *
+ * Lock screen. Web Audio stops when an iOS page goes to the background; an <audio> element plays
+ * on. So inside a house the station is handed to a plain element (started muted, switched to when
+ * it really plays) and handed back on the way out. See entry() below.
+ *
+ * Stream.enable(canVolume) says whether this path is on (?decode=1 forces it, ?decode=0 turns it
+ * off); Stream.open(...) gives the page an entry for its `playing` map; Stream.prime() is called
+ * from every touch or key. The frame parsers and the chunker are plain functions, tested in node. */
+(function (root) {
+  'use strict';
+
+  /* ---- frame headers ---- */
+  const MP3_KBPS = [
+    [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448],   /* MPEG 1, layer I */
+    [0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384],      /* MPEG 1, layer II */
+    [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320],       /* MPEG 1, layer III */
+    [0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256],      /* MPEG 2 and 2.5, layer I */
+    [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160],           /* MPEG 2 and 2.5, layers II and III */
+  ];
+  const MP3_RATE = [44100, 48000, 32000];
+  const ADTS_RATE = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350];
+
+  /* the MPEG audio frame header at b[o] (4 bytes), or null */
+  function mp3Header(b, o) {
+    if (o + 4 > b.length || b[o] !== 0xff || (b[o + 1] & 0xe0) !== 0xe0) return null;
+    const ver = (b[o + 1] >> 3) & 3, lay = (b[o + 1] >> 1) & 3;     /* ver: 3 = MPEG 1, 2 = MPEG 2, 0 = MPEG 2.5 */
+    if (ver === 1 || lay === 0) return null;
+    const bi = b[o + 2] >> 4, si = (b[o + 2] >> 2) & 3, padding = (b[o + 2] >> 1) & 1;
+    if (bi === 0 || bi === 15 || si === 3) return null;             /* free format is not handled */
+    const layer = 4 - lay, v1 = ver === 3;
+    const bitrate = MP3_KBPS[v1 ? layer - 1 : layer === 1 ? 3 : 4][bi] * 1000;
+    const rate = MP3_RATE[si] >> (v1 ? 0 : ver === 2 ? 1 : 2);
+    const samples = layer === 1 ? 384 : layer === 3 && !v1 ? 576 : 1152;
+    const len = layer === 1 ? (Math.floor(12 * bitrate / rate) + padding) * 4 : Math.floor(samples / 8 * bitrate / rate) + padding;
+    return { kind: 'mp3', len, samples, rate, bitrate, padding, layer, version: v1 ? 1 : ver === 2 ? 2 : 2.5,
+      channels: (b[o + 3] >> 6) === 3 ? 1 : 2, key: (ver << 4) | (lay << 2) | si };
+  }
+
+  /* the ADTS header at b[o] (7 bytes, 9 with a checksum), or null */
+  function adtsHeader(b, o) {
+    if (o + 7 > b.length || b[o] !== 0xff || (b[o + 1] & 0xf6) !== 0xf0) return null;   /* 12 sync bits, layer 0 */
+    const head = b[o + 1] & 1 ? 7 : 9, si = (b[o + 2] >> 2) & 15;
+    if (si > 12) return null;
+    const channels = ((b[o + 2] & 1) << 2) | (b[o + 3] >> 6);
+    const len = ((b[o + 3] & 3) << 11) | (b[o + 4] << 3) | (b[o + 5] >> 5);
+    if (len < head) return null;
+    const blocks = (b[o + 6] & 3) + 1, profile = (b[o + 2] >> 6) + 1;
+    return { kind: 'aac', len, head, samples: 1024 * blocks, rate: ADTS_RATE[si], profile, channels,
+      key: 0x100 | (profile << 7) | (si << 3) | channels };
+  }
+
+  /* the whole size of an ID3v2 tag at b[o] (10 bytes needed), or 0 */
+  function id3Size(b, o) {
+    if (o + 10 > b.length || b[o] !== 0x49 || b[o + 1] !== 0x44 || b[o + 2] !== 0x33) return 0;
+    if (b[o + 3] === 0xff || b[o + 4] === 0xff || ((b[o + 6] | b[o + 7] | b[o + 8] | b[o + 9]) & 0x80)) return 0;
+    return 10 + ((b[o + 6] << 21) | (b[o + 7] << 14) | (b[o + 8] << 7) | b[o + 9]) + (b[o + 5] & 0x10 ? 10 : 0);
+  }
+
+  const headerAt = (b, o) => mp3Header(b, o) || adtsHeader(b, o);
+  const NEED = 10;          /* bytes that decide what stands at a position */
+  const GIVE_UP = 200000;   /* this much without one frame: not a stream we can read */
+
+  /* Bytes in, whole frames out: { data, dur (seconds), gap (something was lost before it) }.
+   * A stream may start anywhere, so the first frame is one whose length leads to a second header
+   * and that one to a third, all of one kind. From there each frame must lead to the next; when
+   * one does not, it is left out, the search starts again and the next frame is marked as
+   * following a gap. */
+  function framer() {
+    let buf = new Uint8Array(0), synced = false, skip = 0, gap = true, junk = 0;
+    const f = { kind: null, rate: 0, channels: 0, bitrate: 0, frames: 0, lost: 0, dead: false, why: '' };
+    /* headers of one kind from o on: how many in a row, up to n; -1 when the bytes run out first */
+    function chain(o, n) {
+      let k = 0, key = -1;
+      while (k < n) {
+        if (o + NEED > buf.length) return -1;
+        const h = headerAt(buf, o);
+        if (!h || (k && h.key !== key)) return k;
+        key = h.key; o += h.len; k++;
+      }
+      return k;
+    }
+    f.push = function (bytes) {
+      const out = [];
+      if (f.dead) return out;
+      if (buf.length) { const j = new Uint8Array(buf.length + bytes.length); j.set(buf); j.set(bytes, buf.length); buf = j; } else buf = bytes;
+      let o = 0;
+      for (;;) {
+        if (skip) { const n = Math.min(skip, buf.length - o); o += n; skip -= n; if (skip) break; }
+        if (o + NEED > buf.length) break;
+        if (!synced) {
+          const tag = id3Size(buf, o);
+          if (tag) { skip = tag; gap = true; continue; }
+          if (!f.frames && buf[o] === 0x4f && buf[o + 1] === 0x67 && buf[o + 2] === 0x67 && buf[o + 3] === 0x53) { f.dead = true; f.why = 'ogg'; break; }
+          const run = chain(o, 3);
+          if (run < 0) break;                           /* wait for the bytes that decide */
+          if (run < 3) { o++; junk++; f.lost++; gap = true; if (!f.frames && junk > GIVE_UP) { f.dead = true; f.why = 'no frames'; break; } continue; }
+          synced = true;
+        }
+        const h = headerAt(buf, o);
+        if (!h) { synced = false; continue; }
+        if (o + h.len + NEED > buf.length) break;
+        const next = headerAt(buf, o + h.len);            /* a frame that does not lead to another is damaged, or was never one */
+        if (!next || next.key !== h.key) { synced = false; o++; f.lost++; gap = true; continue; }
+        f.kind = h.kind; f.rate = h.rate; f.channels = h.channels; if (h.bitrate) f.bitrate = h.bitrate;
+        out.push({ data: buf.slice(o, o + h.len), dur: h.samples / h.rate, gap });
+        gap = false; f.frames++; o += h.len;
+      }
+      buf = buf.subarray(o);
+      return out;
+    };
+    return f;
+  }
+
+  /* Frames in, pieces to decode out. A piece is up to `max` seconds of new frames with the last
+   * `pre` seconds of the piece before it in front (none after a gap: then it is `fresh`). */
+  function chunker(pre) {
+    let q = [], lead = [], held = 0;
+    const c = {
+      get held() { return held; },
+      add(frames) { for (const fr of frames) { q.push(fr); held += fr.dur; } },
+      /* a piece of at least `min` seconds (of exactly `count` frames, if given), or what stands before a gap, or null */
+      take(min, max, count) {
+        if (!q.length) return null;
+        let n = 0, dur = 0, cut = false;
+        while (n < q.length && (count ? n < count : dur < max)) { if (n && q[n].gap) { cut = true; break; } dur += q[n].dur; n++; }
+        if ((count ? n < count : dur < min) && !cut) return null;
+        const fresh = q[0].gap || !lead.length;
+        if (fresh) lead = [];
+        const taken = q.splice(0, n), all = lead.concat(taken);
+        held = q.length ? held - dur : 0;
+        let size = 0, preDur = 0;
+        for (const fr of all) size += fr.data.length;
+        for (const fr of lead) preDur += fr.dur;
+        const data = new Uint8Array(size);
+        let o = 0;
+        for (const fr of all) { data.set(fr.data, o); o += fr.data.length; }
+        let k = all.length, d = 0;
+        while (k > 0 && d < pre) d += all[--k].dur;
+        lead = all.slice(k);
+        return { data, fresh, pre: preDur, dur, frames: all.length };
+      },
+      /* too much is waiting: forget the oldest, keep `keep` seconds. Returns the seconds dropped. */
+      drop(keep) {
+        let d = 0;
+        while (q.length && held - d > keep) d += q.shift().dur;
+        held = q.length ? held - d : 0;
+        if (q.length) q[0].gap = true;
+        lead = [];
+        return d;
+      },
+      /* the next piece starts on its own */
+      reset() { lead = []; },
+      clear() { q = []; lead = []; held = 0; },
+    };
+    return c;
+  }
+
+  /* Where in `b` (a channel-mixed Float32Array that starts at sample `base` of its buffer) the
+   * `w` samples of `t` occur, near `guess`: the lag with the highest normalised correlation.
+   * Looks at guess + hint first, then everywhere within `reach`. */
+  function align(t, b, base, guess, hint, reach) {
+    const w = t.length;
+    let et = 0;
+    for (let i = 0; i < w; i++) et += t[i] * t[i];
+    if (et < w * 1e-8) return { at: guess + hint, corr: 1, silent: true };     /* nothing to line up, and nothing to hear */
+    function score(at, step) {
+      let s = 0, eb = 0, e = 0;
+      const p = at - w - base;
+      if (p < 0 || p + w > b.length) return -1;
+      for (let i = 0; i < w; i += step) { const x = b[p + i], y = t[i]; s += x * y; eb += x * x; e += y * y; }
+      return eb > 0 ? s / Math.sqrt(eb * e) : 0;
+    }
+    let best = -1, at = guess + hint;
+    for (let d = -2; d <= 2; d++) { const c = score(guess + hint + d, 1); if (c > best) { best = c; at = guess + hint + d; } }
+    if (best >= 0.98) return { at, corr: best };
+    let rough = -1, r0 = guess;
+    for (let d = -reach; d <= reach; d += 2) { const c = score(guess + d, 4); if (c > rough) { rough = c; r0 = guess + d; } }
+    for (let d = -3; d <= 3; d++) { const c = score(r0 + d, 1); if (c > best) { best = c; at = r0 + d; } }
+    return best >= 0.8 ? { at, corr: best } : { at: guess + hint, corr: best, blind: true };
+  }
+
+  const api = { mp3Header, adtsHeader, id3Size, framer, chunker, align };
+
+  /* ================= the browser part ================= */
+  if (typeof document !== 'undefined') {
+    const START = 0.6;     /* seconds of stream in hand before the first piece */
+    const CHUNK = 1.0;     /* seconds of new audio per piece */
+    const AHEAD = 1.6;     /* decode the next piece when less than this is scheduled */
+    const LOW = 0.45, SHORT = 0.3;   /* nearly dry: a short piece will do */
+    const PRE = 0.25;      /* seconds of the piece before, decoded again in front */
+    const WARM = 0.1;      /* seconds not played at the start of a piece that stands alone */
+    const TAIL = 0.03;     /* seconds not played at the end of a decoded buffer (the next piece has them) */
+    const FADE = 0.005;    /* the cross-fade at a join, and the fade at a loose end */
+    const LEAD = 0.06;     /* a first piece starts this far ahead of the clock */
+    const REACH = 0.07;    /* how far from the expected place a join is searched */
+    const CAP = 40, KEEP = 5;   /* seconds waiting undecoded: over CAP, drop down to KEEP (the phone's clock runs slower than the station's, or the page slept) */
+    const W = 1024;        /* samples compared at a join */
+    const SMOOTH = 0.015, SWAP = 0.05;   /* time constants: following the page's gain, and the hand-over */
+
+    const entries = new Set();
+    let timer = 0;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const decode = (ctx, ab) => new Promise((ok, no) => { const p = ctx.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(() => {}); });
+    function mono(buf, from, n) {
+      const m = new Float32Array(n), a = buf.getChannelData(0);
+      if (buf.numberOfChannels > 1) { const c = buf.getChannelData(1); for (let i = 0; i < n; i++) m[i] = (a[from + i] + c[from + i]) * 0.5; }
+      else for (let i = 0; i < n; i++) m[i] = a[from + i];
+      return m;
+    }
+    function glide(param, ctx, v, tc) {
+      if (param._to === v) return;
+      param._to = v;
+      const t = ctx.currentTime;
+      try { param.cancelScheduledValues(t); param.setTargetAtTime(v, t, tc); } catch (e) { param.value = v; }
+    }
+
+    /* ---- one stream, decoded: fetch -> frames -> pieces -> buffers on the clock -> bus ---- */
+    function player(ctx, url, onfail) {
+      const bus = ctx.createGain();
+      const ch = chunker(PRE);
+      const live = new Set();          /* buffer sources scheduled or sounding */
+      const stats = { opened: performance.now(), first: 0, kind: '', rate: 0, bitrate: 0, bytes: 0, pieces: 0, joins: 0, blind: 0, silent: 0,
+        minCorr: 1, errSum: 0, errMax: 0, offMin: 1e9, offMax: -1e9, underruns: 0, decodeFails: 0, reconnects: 0, dropped: 0, decodeMs: 0, lost: 0 };
+      let on = false, ac = null, run = 0, busy = false, failed = false;
+      let prev = null;                 /* the last piece placed: { buf, cut, n (clock sample of cut), total (seconds of stream in buf) } */
+      let need = START, hint = 0, fails = 0, since = 0, firstAt = 0, got = false, even = 0;
+
+      /* Where the stream's rate is not the output's, the decoder also resamples, and two pieces line
+       * up to the sample only if they start a whole number of output samples apart. So a piece is
+       * a number of frames for which that holds (49 MP3 frames from 44.1 to 48 kHz), where such a
+       * number is near a second. Otherwise (0) any length will do, and a join is up to half a sample out. */
+      function whole(spf, rate) {
+        const gcd = (a, b) => b ? gcd(b, a % b) : a;
+        const b = rate / gcd(rate, spf * ctx.sampleRate), sec = b * spf / rate;
+        return b > 1 && sec <= 2.2 ? Math.max(1, Math.round(CHUNK / sec)) * b : 0;
+      }
+
+      function fail(why) {
+        if (failed) return;
+        failed = true; stats.failed = why; halt();
+        if (onfail) onfail(why);
+      }
+      function halt() {
+        on = false; run++;
+        if (ac) { try { ac.abort(); } catch (e) { /* already gone */ } ac = null; }
+        for (const s of live) { try { s.onended = null; s.stop(); s.disconnect(); } catch (e) { /* never started */ } }
+        live.clear(); ch.clear(); prev = null; busy = false; firstAt = 0;
+      }
+      async function connect() {
+        const my = ++run;
+        let wait = 1000, empty = 0;
+        on = true;
+        while (my === run) {
+          const fr = framer();
+          let frames = 0;
+          try {
+            ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const res = await fetch(url, { mode: 'cors', credentials: 'omit', cache: 'no-store', signal: ac ? ac.signal : undefined });
+            if (my !== run) return;
+            if (!res.ok || !res.body || !res.body.getReader) { if (!got) return fail(res.ok ? 'no stream reader' : 'http ' + res.status); throw new Error('http'); }
+            const reader = res.body.getReader();
+            for (;;) {
+              const r = await reader.read();
+              if (my !== run) { try { reader.cancel(); } catch (e) { /* gone */ } return; }
+              if (r.done) break;
+              stats.bytes += r.value.length;
+              const out = fr.push(r.value);
+              if (fr.dead) return fail('format: ' + fr.why);
+              if (out.length) {
+                if (!got) { stats.kind = fr.kind; stats.rate = fr.rate; stats.bitrate = fr.bitrate; }
+                if (!frames) even = whole(Math.round(out[0].dur * fr.rate), fr.rate);
+                got = true; frames += out.length; stats.lost = fr.lost;
+                if (frames > 200) { wait = 1000; empty = 0; }
+                ch.add(out); pump();
+              }
+            }
+          } catch (err) {
+            if (my !== run) return;
+            if (!got) return fail('fetch: ' + (err && err.message || err));   /* refused (no cross-origin reads) or no network */
+          }
+          if (my !== run) return;
+          if (!got) return fail('format: ended without a frame');
+          if (!frames && ++empty >= 5) return fail('stream gone');
+          stats.reconnects++;                                                  /* it played before: the line dropped, call again */
+          await sleep(wait); wait = Math.min(wait * 2, 15000);
+        }
+      }
+
+      /* put a decoded piece on the clock */
+      function place(piece, buf) {
+        const sr = ctx.sampleRate, L = buf.length, F = Math.round(FADE * sr), cut = L - Math.round(TAIL * sr) - F;
+        const now = Math.ceil(ctx.currentTime * sr);
+        let h = Math.round((piece.fresh ? WARM : piece.pre) * sr), n0 = now + Math.round(LEAD * sr), joined = false;
+        if (prev && prev.n > now + F) {
+          n0 = prev.n;                                                        /* never before the piece that is sounding ends */
+          if (!piece.fresh) {
+            const guess = prev.cut - Math.round((prev.total - piece.pre) * sr);   /* the sample of buf that is prev.cut of prev.buf, if the decoder is regular */
+            const reach = Math.round(REACH * sr), lo = Math.max(0, guess - reach - W), hi = Math.min(L, guess + reach + 4);
+            if (guess - W >= 0 && guess + F < cut && prev.cut - W >= 0) {
+              const a = align(mono(prev.buf, prev.cut - W, W), mono(buf, lo, hi - lo), lo, guess, hint, reach);
+              h = Math.max(F, Math.min(cut - 2 * F, a.at)); joined = true; stats.joins++;
+              if (a.silent) stats.silent++;
+              else if (a.blind) stats.blind++;
+              else {
+                hint = a.at - guess;
+                stats.offMin = Math.min(stats.offMin, hint); stats.offMax = Math.max(stats.offMax, hint);
+                /* how well the two decodings agree just before they are cross-faded, against the level there */
+                const x = mono(prev.buf, prev.cut - F, F), y = mono(buf, h - F, F);
+                let d = 0, e = 0;
+                for (let i = 0; i < F; i++) { d += (x[i] - y[i]) * (x[i] - y[i]); e += x[i] * x[i]; }
+                const err = e > 1e-9 ? Math.sqrt(d / e) : 0;
+                stats.errSum += err; stats.errMax = Math.max(stats.errMax, err);
+              }
+              if (!a.silent) stats.minCorr = Math.min(stats.minCorr, a.corr);
+            }
+          }
+        }
+        if (cut - h < 2 * F) { ch.reset(); return; }                           /* too little came out of the decoder to play */
+        for (let c = 0; c < buf.numberOfChannels; c++) {
+          const d = buf.getChannelData(c);
+          for (let i = 0; i < F; i++) { d[h + i] *= i / F; d[cut + i] *= 1 - i / F; }   /* in at the head, out at the tail: two of these overlapped add up to one */
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf; src.connect(bus);
+        src.onended = () => { live.delete(src); src.disconnect(); };
+        src.start(n0 / sr, h / sr, (cut + F - h) / sr);
+        live.add(src);
+        if (!joined && !firstAt) firstAt = n0 / sr;
+        if (!stats.first) stats.first = performance.now() - stats.opened + Math.max(0, n0 / sr - ctx.currentTime) * 1000;
+        prev = { buf, cut, n: n0 + (cut - h), total: piece.pre + piece.dur };
+        stats.pieces++;
+        if (api.onjoin) api.onjoin({ n: n0, joined, h, cut, len: L });      /* for the tests */
+      }
+
+      function pump() {
+        if (!on || busy) return;
+        const now = ctx.currentTime, sr = ctx.sampleRate;
+        if (ch.held > CAP) stats.dropped += ch.drop(KEEP);
+        if (prev && now * sr > prev.n) {                                      /* ran dry: gather a little more than last time, quietly */
+          prev = null; firstAt = 0; ch.reset(); stats.underruns++;
+          need = Math.min(3, 1 + 0.5 * stats.underruns);
+        }
+        const ahead = prev ? prev.n / sr - now : 0;
+        if (prev && ahead > AHEAD) return;
+        const piece = !prev ? (ch.held >= need ? ch.take(0, CHUNK) : null)
+          : ahead < LOW ? ch.take(SHORT, CHUNK) : ch.take(CHUNK, CHUNK, even);
+        if (!piece) return;
+        const my = run, t0 = performance.now();
+        busy = true;
+        decode(ctx, piece.data.buffer).then((buf) => {
+          if (my !== run) return;
+          busy = false; fails = 0; stats.decodeMs += performance.now() - t0;
+          place(piece, buf); pump();
+        }, () => {
+          if (my !== run) return;
+          busy = false; stats.decodeFails++; ch.reset();
+          if (++fails >= 3) fail('decode'); else pump();
+        });
+      }
+
+      return {
+        bus, stats,
+        start() { if (!on && !failed) { since = performance.now(); connect(); } },
+        halt,                                             /* stop fetching and sounding; start() calls again */
+        pump,
+        get on() { return on; },
+        get failed() { return failed; },
+        /* is its sound really coming out now */
+        get audible() { return on && ctx.state === 'running' && !!prev && firstAt > 0 && ctx.currentTime > firstAt + 0.05 && ctx.currentTime * ctx.sampleRate < prev.n; },
+        get held() { return ch.held; },
+        get ahead() { return prev ? prev.n / ctx.sampleRate - ctx.currentTime : 0; },
+        get age() { return performance.now() - since; },
+      };
+    }
+
+    /* ---- elements for indoors. iOS lets an element play only if a touch once played it: these
+     * are played (a silent clip) from the first touch, and used for every house after. ---- */
+    const pool = [];
+    let silence = '';
+    function quiet() {
+      if (!silence) {
+        const b = new Uint8Array(44 + 800), v = new DataView(b.buffer);            /* 0.1 s of 8 kHz 8-bit silence */
+        const s = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+        s(0, 'RIFF'); v.setUint32(4, 36 + 800, true); s(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); s(36, 'data'); v.setUint32(40, 800, true);
+        b.fill(128, 44);
+        let bin = ''; for (let i = 0; i < b.length; i++) bin += String.fromCharCode(b[i]);
+        silence = 'data:audio/wav;base64,' + btoa(bin);
+      }
+      return silence;
+    }
+    function prime() {
+      while (pool.length < 2) pool.push({ a: new Audio(), primed: false, used: false });
+      for (const p of pool) {
+        if (p.primed || p.used) continue;
+        p.primed = true; p.a.muted = true; p.a.src = quiet();
+        p.a.play().then(() => { if (!p.used) p.a.pause(); }, () => { if (!p.used) p.primed = false; });
+      }
+      for (const e of entries) e.dec.touch();
+    }
+    function borrow() {
+      let p = pool.find((x) => !x.used && x.primed) || pool.find((x) => !x.used);
+      if (!p) { p = { a: new Audio(), primed: false, used: false }; pool.push(p); }
+      p.used = true;
+      return p;
+    }
+    const STUB = { pause() {}, removeAttribute() {}, load() {}, paused: true, readyState: 0, currentTime: 0 };
+
+    /* ---- what the page keeps in `playing`: { a, gain, node, dec } ----
+     * Outdoors (`out`) the decoded stream sounds through `node`. Indoors an element is started
+     * muted (`arming`); once it really plays, it is unmuted and the decoded stream fades out
+     * (`in`), still decoded while the page is visible so the room can hear the beat and the way
+     * back is instant. Leaving, the decoded stream fades in as the element stops. With the page
+     * hidden (the phone locked) only the element runs. */
+    function open(o) {
+      const ctx = o.ctx, p = player(ctx, o.url, (why) => { if (!e.gone && o.onfail) o.onfail(e, why); });
+      const node = ctx.createGain(), feed = o.tap ? ctx.createGain() : null;
+      node.gain.value = 0; p.bus.connect(node); node.connect(o.to);
+      if (feed) { feed.gain.value = 0; p.bus.connect(feed); feed.connect(o.tap); }
+      let phase = 'out', el = null, refused = false, armed = 0, swapped = -1e9, cool = 0;
+      const e = { a: STUB, gain: 0, node, dec: null, gone: false };
+      const swaps = [];       /* for the tests: when each hand-over happened */
+
+      function playing() { return el && !el.a.paused && el.a.readyState >= 3 && el.a.currentTime > 0.2; }
+      function arm() {
+        el = borrow(); e.a = el.a; refused = false; armed = performance.now();
+        el.a.muted = true; el.a.src = o.url;
+        el.a.play().catch((err) => { if (err && err.name === 'NotAllowedError') refused = true; });
+        phase = 'arming';
+      }
+      function release() {
+        if (!el) return;
+        const a = el.a;
+        a.muted = true; a.pause(); a.removeAttribute('src'); a.load();
+        el.used = false; el = null; e.a = STUB;
+      }
+      function toElement(muted) {
+        el.a.muted = !!muted; phase = 'in'; swapped = performance.now();
+        swaps.push({ to: 'element', ms: performance.now() - armed, at: performance.now() });
+      }
+      const dec = {
+        player: p, swaps,
+        get phase() { return phase; },
+        /* every step of the page: our fade (0..1), whether the player is inside this house, mute, volume */
+        level(gain, inside, muted, master) {
+          dec.muted = muted;
+          if (inside && phase === 'out' && performance.now() > cool) arm();
+          else if (!inside && phase === 'arming') { release(); phase = 'out'; }
+          if (phase === 'arming' && playing()) toElement(muted);
+          if (phase === 'in') {
+            el.a.muted = !!muted;
+            if (o.canVolume) el.a.volume = Math.max(0, Math.min(1, gain * master));
+            if (!document.hidden && !p.on && !p.failed) p.start();
+            if (!inside && (p.audible || p.failed || el.a.paused)) {            /* out of the door, and the decoded stream is there to take over */
+              release(); phase = 'out'; swapped = performance.now();
+              swaps.push({ to: 'decoded', at: swapped });
+            } else if (inside && el.a.paused && !document.hidden) {            /* the element stopped (refused, or interrupted): the decoded stream again, and another try later */
+              release(); phase = 'out'; swapped = performance.now(); cool = swapped + 15000;
+              swaps.push({ to: 'decoded', at: swapped, why: 'element paused' });
+            }
+          }
+          glide(node.gain, ctx, phase === 'in' ? 0 : gain, performance.now() - swapped < 400 ? SWAP : SMOOTH);
+          if (feed) glide(feed.gain, ctx, phase === 'in' ? 1 : 0, SWAP);
+        },
+        /* a touch or key: an element that was refused may play now */
+        touch() { if (phase === 'arming' && refused && el) { refused = false; el.a.play().catch(() => { refused = true; }); } },
+        /* the page went to the background or came back */
+        hidden(h) {
+          if (h) {
+            if (phase === 'arming' && el && !el.a.paused) toElement(dec.muted);
+            if (phase === 'in') p.halt();
+          } else {
+            if (ctx.state !== 'running') ctx.resume().catch(() => {});
+            if (!p.on && !p.failed && !e.gone) p.start();
+          }
+        },
+        stop() {
+          if (e.gone) return;
+          e.gone = true; entries.delete(e);
+          p.halt(); release();
+          try { p.bus.disconnect(); node.disconnect(); if (feed) feed.disconnect(); } catch (err) { /* already apart */ }
+          if (!entries.size && timer) { clearInterval(timer); timer = 0; }
+        },
+      };
+      e.dec = dec;
+      entries.add(e);
+      if (!timer) timer = setInterval(() => { for (const x of entries) x.dec.player.pump(); }, 100);
+      p.start();
+      return e;
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      for (const e of entries) e.dec.hidden(document.hidden);
+    });
+
+    /* Is this path on? Where the page cannot set an element's loudness, unless ?decode=0; anywhere with ?decode=1. */
+    function enable(canVolume) {
+      const flag = new URLSearchParams(location.search).get('decode');
+      const able = !!(root.AudioContext || root.webkitAudioContext) && typeof fetch === 'function' && typeof ReadableStream !== 'undefined';
+      const yes = able && flag !== '0' && (flag === '1' || !canVolume);
+      /* iOS: without this, Web Audio is silent while the ringer switch is off (iOS 17 and later have the setting) */
+      if (yes) { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* not there: nothing to set */ } }
+      return yes;
+    }
+
+    api.enable = enable; api.open = open; api.prime = prime; api.entries = entries;
+  }
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Stream = api;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
 const S = Street;
 const $ = (id) => document.getElementById(id);
 const ctx = $('lcd').getContext('2d');
@@ -1430,18 +2036,20 @@ if (!/^[a-f0-9]{32}$/.test(myId)) {
   myId = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
   store.set('id', myId);
 }
-/* your look is st.p.hair and st.p.shirt, kept as street.hair and street.shirt once chosen in the menu; until then it follows from your id */
-const savedLook = () => { const d = Proto.defaultLook(myId); return Proto.lookOf(+store.get('hair', String(d & 1)), +store.get('shirt', String((d >> 1) & 1))); };
-const netUrl = query.get('solo') === '1' ? '' : query.get('server') || NET_URL;
+/* your look is st.p.look, one byte (hair, face, shirt, legs: street.js, dress), kept as street.look once chosen in the menu; until then it follows from your id */
+const savedLook = () => { const v = store.get('look', null); return v === null ? Proto.fnv(myId) & 255 : +v & 255; };
+/* ?server= only reaches this machine or the site's own hosts: a link cannot point a visitor's page at someone else's server */
+const asked = query.get('server') || '', askedOk = /^wss?:\/\/(localhost|127\.0\.0\.1|([a-z0-9-]+\.)*july\.dev)(:\d+)?(\/|$)/.test(asked);
+const netUrl = query.get('solo') === '1' ? '' : (askedOk ? asked : NET_URL);
 const net = netUrl ? Net.create({ url: netUrl, S, pid: myId, name: myName, look: savedLook(),
   lag: query.get('lag'), jitter: query.get('jitter'), stall: query.get('stall'), stallEvery: query.get('stallevery') }) : null;
 document.addEventListener('visibilitychange', () => { if (net && !document.hidden) net.visible(); });
 /* the menu calls this when the name or the look changed: tell the others */
-window.onProfileChange = () => { if (net && st) { net.setName(st.p.name); net.setLook(Proto.lookOf(st.p.hair, st.p.shirt)); } };
+window.onProfileChange = () => { if (net && st) { net.setName(st.p.name); net.setLook(st.p.look); } };
 
 function setMode(m) {
   st = S.create(m, (Math.random() * 1e9) | 0);
-  st.p.name = myName; st.p.hair = savedLook() & 1; st.p.shirt = (savedLook() >> 1) & 1;
+  st.p.name = myName; st.p.look = savedLook();
   if (net) { if (m === '2d') st.bots = []; net.attach(st); }   /* with a server the town has its real visitors, or nobody */
   mode.setAttribute('aria-checked', m === '2d');
   dpad.classList.toggle('one', m === '1d');
@@ -1539,17 +2147,19 @@ hold(btnA, () => { action = true; }, () => {});
 hold(btnB, () => { keys.run = true; }, () => { keys.run = false; });
 tap(mode, () => setMode(st.mode === '1d' ? '2d' : '1d'));
 
-const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down', Shift: 'run' };
+const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Shift: 'run', b: 'run', B: 'run' };
+const A_KEYS = { ' ': 1, Enter: 1, a: 1, A: 1 };
 addEventListener('keydown', (e) => {
   if (menu.key(e)) return;
   wake();
-  if (KEY[e.key]) { keys[KEY[e.key]] = true; if (e.key === 'Shift') btnB.classList.add('on'); show(); e.preventDefault(); }
-  else if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) { action = true; btnA.classList.add('on'); } e.preventDefault(); }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (KEY[e.key]) { keys[KEY[e.key]] = true; if (KEY[e.key] === 'run') btnB.classList.add('on'); show(); e.preventDefault(); }
+  else if (A_KEYS[e.key]) { if (!e.repeat) { action = true; btnA.classList.add('on'); } e.preventDefault(); }
   else if (e.key === 'm') setMuted(!muted);
 });
 addEventListener('keyup', (e) => {
-  if (KEY[e.key]) { keys[KEY[e.key]] = false; if (e.key === 'Shift') btnB.classList.remove('on'); show(); }
-  if (e.key === ' ' || e.key === 'Enter') btnA.classList.remove('on');
+  if (KEY[e.key]) { keys[KEY[e.key]] = false; if (KEY[e.key] === 'run') btnB.classList.remove('on'); show(); }
+  if (A_KEYS[e.key]) btnA.classList.remove('on');
 });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; show(); });
 
@@ -1565,6 +2175,10 @@ const flag = new URLSearchParams(location.search).get('webaudio');
 /* Not on iOS: Safari there plays a live stream straight to the speaker whatever the graph's gain says
  * (tried 2026-11-17: no fade, no volume, every stream at full). It gets the plain way below. */
 const useGraph = flag === '1' || (flag !== '0' && canVolume && !!(window.AudioContext || window.webkitAudioContext));
+/* iOS gets its fade from stream.js: the stream is fetched and decoded by the page and played through a gain
+ * of its own, outdoors; inside a house an element takes over, because only that plays on with the phone
+ * locked. ?decode=1 does the same on any browser, ?decode=0 turns it off. */
+const useDecode = new URLSearchParams(location.search).get('decode') === '1' && Stream.enable(canVolume);   /* published: opt-in until it is finished */
 const playing = new Map();   /* station -> { a: its element, gain: our own fade, node: its gain in the graph or null } */
 const plain = new Set();     /* stations that have to be played the plain way */
 let actx = null, out = null, mix = null, tap0 = null, bins = null;
@@ -1579,9 +2193,14 @@ function graph() {
   }
   if (actx.state !== 'running') actx.resume().catch(() => {});
 }
-function shut(e) { e.a.pause(); e.a.removeAttribute('src'); e.a.load(); if (e.node) e.node.disconnect(); }
+function shut(e) { e.a.pause(); e.a.removeAttribute('src'); e.a.load(); if (e.node) e.node.disconnect(); if (e.dec) e.dec.stop(); }
 
 function open(w) {
+  if (useDecode && actx && !S.STATIONS[w.i].closed && !plain.has(w.i)) {   /* decoded by the page; if that fails, the plain way */
+    playing.set(w.i, Stream.open({ ctx: actx, to: mix, tap: tap0, url: w.url, canVolume,
+      onfail: (e) => { plain.add(w.i); if (playing.get(w.i) === e) { shut(e); playing.delete(w.i); } } }));
+    return;
+  }
   const e = { a: new Audio(), gain: 0, node: null };
   if (useGraph && actx && !S.STATIONS[w.i].closed && !plain.has(w.i)) {
     try {
@@ -1608,8 +2227,9 @@ function sound() {
     if (!loud || e.gain > loud.gain) loud = e;
   }
   if (out) out.gain.value = muted ? 0 : master;
-  for (const e of playing.values()) {
-    if (e.node) e.node.gain.value = e.gain;
+  for (const [i, e] of playing) {
+    if (e.dec) e.dec.level(e.gain, st.inside === i, muted, master);
+    else if (e.node) e.node.gain.value = e.gain;
     else if (canVolume) { e.a.volume = Math.max(0, Math.min(1, e.gain * master)); e.a.muted = muted; }
     else e.a.muted = muted || e !== loud || e.gain < 0.12;   /* no volume to set: the loudest one, once you are close to its door */
   }
@@ -1633,7 +2253,8 @@ function beat(now) {
 
 /* a touch or key: sound may start, and a suspended graph resumes. Called from the gesture itself, which iOS wants. */
 function wake() {
-  if (useGraph) graph();
+  if (useGraph || useDecode) graph();
+  if (useDecode) Stream.prime();
   if (!started) { started = true; sound(); }
 }
 addEventListener('pointerup', wake);
@@ -1667,20 +2288,23 @@ vol.addEventListener('pointermove', (e) => { if (vol.hasPointerCapture(e.pointer
 vol.addEventListener('pointerup', () => setVolume(master, true));
 setVolume(master, false);
 /* where the page cannot set loudness at all (iOS), the slider would be a dummy: leave it off the case */
-if (!canVolume && !useGraph) { vol.hidden = true; $('volprint').hidden = true; }
+if (!canVolume && !useGraph && !useDecode) { vol.hidden = true; $('volprint').hidden = true; }
 
 /* ---- the settings menu, drawn on the screen and worked with the cross, A and B ----
- * SETTINGS: name, hair, shirt, the controls. NAME is a letter grid, as on a console: the cross
- * moves, A picks, B rubs out; a keyboard can simply type. Nothing is a web form. */
+ * SETTINGS: your name, your character, the controls. NAME is a letter grid, as on a console (a
+ * keyboard can simply type). CHARACTER is four parts, each stepped through with left, right or
+ * A, beside a preview that turns on the spot. Nothing is a web form. */
 const menu = (() => {
   const G = S.gfx, touch = matchMedia('(pointer: coarse)').matches;
-  const ROWS = ['NAME', 'HAIR', 'SHIRT', 'CONTROLS', 'CLOSE'];
+  const ROWS = ['NAME', 'CHARACTER', 'CONTROLS', 'CLOSE'];
   const GRID = ['ABCDEFGHI', 'JKLMNOPQR', 'STUVWXYZ-', '012345678'].map((r) => r.split('').map((c, k) => ({ label: c, col: k, w: 1 })));
   GRID.push([{ label: '9', col: 0, w: 1 }, { label: '.', col: 1, w: 1 }, { label: 'DEL', col: 3, w: 3 }, { label: 'OK', col: 7, w: 2 }]);
   const HELP = touch
-    ? [['CROSS', 'WALK'], ['A', 'IN - OUT - SIT'], ['B', 'SPRINT'], ['SWITCH', 'STREET - TOWN'], ['SPEAKER', 'MUTE'], ['SLIDER', 'VOLUME']]
-    : [['ARROWS', 'WALK'], ['SPACE', 'IN - OUT - SIT'], ['SHIFT', 'SPRINT'], ['M', 'MUTE'], ['SWITCH', 'STREET - TOWN'], ['SLIDER', 'VOLUME']];
-  const m = { open: false, screen: 'main', row: 0, r: 0, c: 0, draft: '' };
+    ? [['CROSS', 'WALK'], ['A', 'IN, OUT, SIT'], ['B', 'SPRINT'], ['SWITCH', 'STREET / TOWN'], ['SPEAKER', 'MUTE'], ['SLIDER', 'VOLUME']]
+    : [['ARROWS', 'WALK'], ['A / SPACE', 'IN, OUT, SIT'], ['B / SHIFT', 'SPRINT'], ['M', 'MUTE'], ['SWITCH', 'STREET / TOWN'], ['SLIDER', 'VOLUME']];
+  /* the four parts of a look: which sprite rows show the part, two bits each from the bottom */
+  const PARTS = [{ from: 0, to: 8 }, { from: 3, to: 8 }, { from: 8, to: 12 }, { from: 12, to: 16 }];
+  const m = { open: false, screen: 'main', row: 0, r: 0, c: 0, draft: '', part: 0 };
   const held = {}; let wasRun = false;
 
   const profile = () => { if (window.onProfileChange) window.onProfileChange(); };
@@ -1688,10 +2312,10 @@ const menu = (() => {
     myName = m.draft; st.p.name = myName; store.set('name', myName); profile();
     m.screen = 'main';
   }
-  function flip(what) {
-    if (what === 'HAIR') { st.p.hair = st.p.hair ? 0 : 1; store.set('hair', String(st.p.hair)); }
-    else { st.p.shirt = st.p.shirt ? 0 : 1; store.set('shirt', String(st.p.shirt)); }
-    profile();
+  function turn(part, by) {   /* the next or the previous of a part's four */
+    const shift = part * 2, now = (st.p.look >> shift) & 3;
+    st.p.look = (st.p.look & ~(3 << shift)) | (((now + by + 4) & 3) << shift);
+    store.set('look', String(st.p.look)); profile();
   }
   function type(ch) { if (m.draft.length < 8 && ch !== ' ' && S.FONT[ch]) m.draft += ch; }
   function press(b) {
@@ -1700,15 +2324,20 @@ const menu = (() => {
       if (b === 'up') m.row = (m.row + ROWS.length - 1) % ROWS.length;
       else if (b === 'down') m.row = (m.row + 1) % ROWS.length;
       else if (b === 'B') m.open = false;
-      else if ((b === 'left' || b === 'right') && (row === 'HAIR' || row === 'SHIRT')) flip(row);
       else if (b === 'A') {
         if (row === 'NAME') { m.screen = 'name'; m.draft = myName; m.r = 0; m.c = 0; }
+        else if (row === 'CHARACTER') { m.screen = 'character'; m.part = 0; }
         else if (row === 'CONTROLS') m.screen = 'controls';
-        else if (row === 'CLOSE') m.open = false;
-        else flip(row);
+        else m.open = false;
       }
     } else if (m.screen === 'controls') {
       if (b === 'A' || b === 'B') m.screen = 'main';
+    } else if (m.screen === 'character') {
+      if (b === 'up') m.part = (m.part + 3) % 4;
+      else if (b === 'down') m.part = (m.part + 1) % 4;
+      else if (b === 'left') turn(m.part, -1);
+      else if (b === 'right' || b === 'A') turn(m.part, 1);
+      else if (b === 'B') m.screen = 'main';
     } else {
       const here = GRID[m.r][m.c];
       const move = (r) => {   /* to the cell of another row nearest under or over this one */
@@ -1738,7 +2367,7 @@ const menu = (() => {
     if (keys.run && !wasRun) press('B');
     wasRun = keys.run;
   }
-  /* a key while open: true if the menu took it. Letters type a name; they must not walk or mute. */
+  /* a key while open: true if the menu took it. On the name screen letters type (A and B too). */
   function key(e) {
     if (!m.open) return false;
     if (e.key === 'Escape') { if (m.screen === 'main') m.open = false; else m.screen = 'main'; return true; }
@@ -1748,33 +2377,63 @@ const menu = (() => {
     if (e.key.length === 1 && e.key !== ' ' && !e.metaKey && !e.ctrlKey) { type(e.key.toUpperCase()); e.preventDefault(); return true; }
     return false;
   }
+  /* the foot of every screen: what A and B do here, in two boxes; on a keyboard, their keys too */
+  function foot(a, b) {
+    G.rect(7, 96, 114, 1, 1); G.rect(63, 96, 1, 17, 1);
+    const cell = (x0, button, keyName, what) => {
+      const mid = (t) => x0 + ((56 - G.textW(t)) >> 1);
+      if (touch) { const t = button + '  ' + what; G.text(mid(t), 102, t, 1); }
+      else { const t = button + ' (' + keyName + ')'; G.text(mid(t), 99, t, 1); G.text(mid(what), 106, what, 1); }
+    };
+    cell(7, 'A', 'SPACE', a); cell(64, 'B', 'SHIFT', b);
+  }
   function draw(buf, now) {
     G.on(buf);
     G.rect(5, 4, 118, 112, 0); G.box(6, 5, 116, 109); G.rect(8, 114, 114, 1, 1);
-    const title = m.screen === 'main' ? 'SETTINGS' : m.screen === 'name' ? 'NAME' : 'CONTROLS';
-    G.text(12, 11, title, 1); for (let x = 12; x < 116; x += 2) G.px(x, 19, 1);
-    const foot = (t) => G.text(12, 104, t, 1);
+    const title = { main: 'SETTINGS', name: 'NAME', character: 'CHARACTER', controls: 'CONTROLS' }[m.screen];
+    G.text(12, 10, title, 1); for (let x = 12; x < 116; x += 2) G.px(x, 18, 1);
     if (m.screen === 'main') {
-      const value = { NAME: myName || '-', HAIR: st.p.hair ? 'DARK' : 'LIGHT', SHIRT: st.p.shirt ? 'DARK' : 'LIGHT' };
       ROWS.forEach((row, k) => {
-        const y = 26 + k * 12, on = k === m.row;
-        if (on) G.rect(10, y - 2, 108, 9, 1);
+        const y = 28 + k * 14, on = k === m.row;
+        if (on) G.rect(10, y - 3, 108, 11, 1);
         G.text(14, y, row, on ? 0 : 1);
-        if (value[row]) G.text(114 - G.textW(value[row]), y, value[row], on ? 0 : 1);
+        if (row === 'NAME') { const v = myName || '-'; G.text(114 - G.textW(v), y, v, on ? 0 : 1); }
       });
-      foot('A CHOOSE   B BACK');
+      foot('CHOOSE', 'BACK');
     } else if (m.screen === 'controls') {
-      HELP.forEach(([k, what], i) => { G.text(12, 26 + i * 11, k, 1); G.text(48, 26 + i * 11, what, 1); });
-      foot('A BACK');
+      /* a table: what you press, what it does */
+      G.box(10, 23, 108, 68); G.rect(54, 23, 1, 68, 1);
+      HELP.forEach(([k, what], i) => {
+        const y = 26 + i * 11;
+        if (i) for (let x = 12; x < 116; x += 2) G.px(x, y - 3, 1);
+        G.text(14, y, k, 1); G.text(58, y, what, 1);
+      });
+      foot('BACK', 'BACK');
+    } else if (m.screen === 'character') {
+      const look = st.p.look, front = S.figure(look, 'd', 0, 0);
+      PARTS.forEach((p, k) => {
+        const y = 23 + k * 18, on = k === m.part, rows = front.slice(p.from, p.to);
+        if (on) { G.box(10, y, 62, 17); G.text(14, y + 6, '<', 1); G.text(65, y + 6, '>', 1); }
+        G.rows(29, y + ((17 - rows.length * 2) >> 1), rows, 2);
+      });
+      /* the preview: turning on the spot, a step now and then */
+      G.box(76, 23, 42, 71);
+      const beat = (now / 450) | 0, dir = ['d', 'r', 'u', 'l'][((beat / 4) | 0) % 4], frame = beat % 2;
+      let rows = S.figure(look, dir === 'l' ? 'r' : dir, dir === 'd' || dir === 'u' ? (frame ? 1 : 2) : frame, 0);
+      if (dir === 'l') rows = rows.map((r) => r.split('').reverse().join(''));
+      G.rows(85, 34, rows, 2);
+      const tagged = myName || '';
+      if (tagged) G.text(97 - (G.textW(tagged) >> 1), 80, tagged, 1);
+      foot('NEXT', 'BACK');
     } else {
-      G.box(12, 23, 104, 11); G.text(16, 26, m.draft, 1);
-      if (m.draft.length < 8 && ((now / 400) | 0) % 2) G.rect(16 + m.draft.length * 4, 31, 3, 1, 1);   /* where the next letter goes */
+      G.box(12, 22, 104, 11); G.text(16, 25, m.draft, 1);
+      if (m.draft.length < 8 && ((now / 400) | 0) % 2) G.rect(16 + m.draft.length * 4, 30, 3, 1, 1);   /* where the next letter goes */
       GRID.forEach((row, r) => row.forEach((cell, c) => {
-        const x = 11 + cell.col * 12, y = 40 + r * 12, w = cell.w * 12 - 1, on = r === m.r && c === m.c;
+        const x = 11 + cell.col * 12, y = 37 + r * 11, w = cell.w * 12 - 1, on = r === m.r && c === m.c;
         if (on) G.rect(x, y, w, 10, 1);
         G.text(x + ((w - G.textW(cell.label)) >> 1), y + 3, cell.label, on ? 0 : 1);
       }));
-      foot(touch ? 'A PICK   B RUB OUT' : 'TYPE - OR A PICK  B RUB OUT');
+      foot('PICK', 'RUB OUT');
     }
   }
   return { get open() { return m.open; }, toggle() { m.open = !m.open; m.screen = 'main'; m.row = 0; }, input, key, draw };
