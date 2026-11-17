@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Radio town</title>
 <style>
   :root { --bg: #e9e6df; --ink: #1c1c1a; --case: #d8d3c6; --case-lo: #c4bfb1; --lcd: #c9cdbf; --dim: #77736a;
@@ -11,18 +11,21 @@
     :root { --bg: #171715; --ink: #e9e6df; --case: #2d2c29; --case-lo: #242321; --dim: #8d897f; --print: #77736a; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink);
-    font: 14px/1.5 ui-monospace, Menlo, monospace; padding: 28px 16px 16px; }
+  /* the page never scrolls, selects or zooms: it is a device, not a document */
+  html, body { position: fixed; inset: 0; margin: 0; overflow: hidden; overscroll-behavior: none; touch-action: none;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  body { display: grid; place-items: center; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 ui-monospace, Menlo, monospace; padding: 22px 16px 16px; }
   main { width: min(100%, 420px); }
   .case { position: relative; background: linear-gradient(var(--case), var(--case-lo)); border-radius: 28px 28px 44px 28px;
-    padding: 24px 22px 22px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d;
-    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    padding: 24px 22px 26px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d; }
   .bezel { padding: 10px; border-radius: 10px; background: #1b1b19; box-shadow: 0 1px 0 #ffffff26, 0 2px 5px #00000080 inset; }
   canvas { display: block; width: 100%; aspect-ratio: 1; image-rendering: pixelated; background: var(--lcd); border-radius: 3px; }
 
   /* the 1D / 2D slide switch, set into the top edge */
   .slide { position: absolute; top: -7px; right: 46px; width: 56px; height: 14px; padding: 0; border: 0; cursor: pointer;
     border-radius: 4px 4px 0 0; background: #0d0d0c; box-shadow: 0 2px 3px #000000a6 inset, 0 1px 0 #ffffff1f; }
+  .slide::before { content: ""; position: absolute; inset: -12px -8px -16px; } /* a bigger target for a thumb */
   .slide::after { content: ""; position: absolute; top: -4px; left: 3px; width: 24px; height: 15px; border-radius: 3px 3px 1px 1px;
     border: 1px solid var(--key-edge);
     background: repeating-linear-gradient(90deg, #4a4a44 0 2px, #2a2a27 2px 4px);
@@ -32,44 +35,44 @@
     font-size: 9px; letter-spacing: 1px; color: var(--print); pointer-events: none; }
 
   .deck { display: grid; grid-template-columns: 132px 1fr 132px; align-items: center; margin-top: 22px; }
-  .dpad { position: relative; width: 132px; height: 132px; perspective: 380px; touch-action: none; cursor: pointer; }
-  .dpad svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .dpad { position: relative; width: 132px; height: 132px; perspective: 380px; cursor: pointer; }
+  .dpad svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
   .dpad .base { filter: drop-shadow(0 5px 5px #00000059); }
   .dpad .cap { transform-origin: 50% 50%; }
   .dpad .arrow { fill: var(--legend); opacity: .35; }
   .dpad .arrow.on { opacity: 1; }
   .dpad.one .v { visibility: hidden; }
 
-  .ab { position: relative; width: 132px; height: 118px; }
+  .ab { position: relative; width: 132px; height: 104px; }
   .btn { position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 1px solid var(--key-edge);
-    color: var(--legend); padding: 0; display: grid; place-items: center; touch-action: none; cursor: pointer;
+    color: var(--legend); padding: 0; display: grid; place-items: center; cursor: pointer;
+    font: 700 22px/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
     background: radial-gradient(circle at 50% 30%, #47473f, var(--key-lo) 70%);
-    box-shadow: 0 1px 0 #ffffff33 inset, 0 -3px 0 #00000059 inset, 0 3px 0 #0000008c, 0 6px 9px #00000040;
-    transition: transform .05s, box-shadow .05s; }
+    box-shadow: 0 1px 0 #ffffff33 inset, 0 -3px 0 #00000059 inset, 0 3px 0 #0000008c, 0 6px 9px #00000040; }
   .btn.on { transform: translateY(2px); box-shadow: 0 1px 0 #ffffff1a inset, 0 -1px 0 #00000059 inset, 0 1px 0 #0000008c; }
-  .btn svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   #a { right: 0; top: 6px; }
   #b { left: 20px; top: 38px; }
-  #a .out, #a.inside .in { display: none; }
-  #a.inside .out { display: block; }
-  .print { position: absolute; font-size: 10px; letter-spacing: 1px; color: var(--print); pointer-events: none; }
-  .print.a { right: 23px; top: 70px; }
-  .print.b { left: 44px; top: 102px; }
 
-  .cog { justify-self: center; align-self: end; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--key-edge);
+  .small { display: flex; flex-direction: column; gap: 10px; justify-self: center; align-self: end; }
+  .cog { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--key-edge);
     color: var(--legend); padding: 0; display: grid; place-items: center; cursor: pointer;
     background: radial-gradient(circle at 50% 30%, #47473f, var(--key-lo) 70%);
     box-shadow: 0 1px 0 #ffffff33 inset, 0 2px 0 #0000008c, 0 4px 6px #00000040; }
-  .cog:active { transform: translateY(1px); box-shadow: 0 1px 0 #ffffff1a inset, 0 1px 0 #0000008c; }
-  .cog svg { width: 16px; height: 16px; fill: none; stroke: currentColor; }
+  .cog.on { transform: translateY(1px); box-shadow: 0 1px 0 #ffffff1a inset, 0 1px 0 #0000008c; }
+  .cog svg { width: 16px; height: 16px; fill: none; stroke: currentColor; pointer-events: none; }
+  #mute svg { stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #mute .off, #mute[aria-pressed="true"] .on-wave { display: none; }
+  #mute[aria-pressed="true"] .off { display: block; }
 
   dialog { border: 1px solid var(--key-edge); border-radius: 14px; padding: 18px; width: min(88vw, 300px); background: var(--case);
-    color: var(--ink); font: inherit; box-shadow: 0 20px 50px #00000080; }
+    color: var(--ink); font: inherit; box-shadow: 0 20px 50px #00000080; user-select: text; -webkit-user-select: text; touch-action: auto; }
   dialog::backdrop { background: #00000080; }
+  dialog h2 { font: inherit; font-weight: 700; margin: 0 0 14px; outline: none; }
   dialog label { display: block; margin-bottom: 6px; }
-  dialog input { width: 100%; font: inherit; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; padding: 8px 10px;
+  dialog input[type="text"] { width: 100%; font: inherit; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; padding: 8px 10px;
     border-radius: 6px; border: 1px solid var(--key-edge); background: var(--lcd); color: #1c1c1a; }
-  dialog small { display: block; color: var(--dim); margin: 8px 0 14px; }
+  dialog input[type="range"] { width: 100%; accent-color: var(--ink); }
+  dialog small { display: block; color: var(--dim); margin: 6px 0 16px; }
   dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
   dialog button { font: inherit; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--dim); background: transparent;
     color: inherit; cursor: pointer; }
@@ -77,7 +80,12 @@
 
   p { color: var(--dim); margin: 14px 4px 0; text-align: center; }
   kbd { color: var(--ink); }
-  @media (pointer: coarse) { #help { display: none; } }
+  @media (pointer: coarse) {
+    #help { display: none; }
+    body { padding-top: 26px; }
+    .case { padding: 34px 22px 46px; }   /* room above the screen and below the controls for a hand */
+    .deck { margin-top: 34px; }
+  }
 </style>
 </head>
 <body>
@@ -112,29 +120,35 @@
           <path class="arrow" data-k="right" d="M120 66l-9-7v14z"/>
         </svg>
       </div>
-      <button class="cog" id="cog" aria-label="Settings">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-width="3.4" stroke-dasharray="3.34 3.34"/><circle cx="12" cy="12" r="5.6" stroke-width="2.6"/></svg>
-      </button>
+      <div class="small">
+        <button class="cog" id="mute" aria-label="Mute" aria-pressed="false">
+          <svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="on-wave" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+        </button>
+        <button class="cog" id="cog" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-width="3.4" stroke-dasharray="3.34 3.34"/><circle cx="12" cy="12" r="5.6" stroke-width="2.6"/></svg>
+        </button>
+      </div>
       <div class="ab">
-        <button class="btn" id="b" aria-label="Sprint">
-          <svg viewBox="0 0 24 24"><path d="M5 7l5 5-5 5"/><path d="M13 7l5 5-5 5"/></svg>
-        </button>
-        <button class="btn" id="a" aria-label="Go in or out">
-          <svg class="in" viewBox="0 0 24 24"><path d="M13 4h6v16h-6"/><path d="M3 12h11"/><path d="M10 8l4 4-4 4"/></svg>
-          <svg class="out" viewBox="0 0 24 24"><path d="M11 4H5v16h6"/><path d="M10 12h11"/><path d="M17 8l4 4-4 4"/></svg>
-        </button>
-        <span class="print b">B</span><span class="print a">A</span>
+        <button class="btn" id="b" aria-label="B: sprint">B</button>
+        <button class="btn" id="a" aria-label="A: go in or out">A</button>
       </div>
     </div>
   </div>
-  <p id="help"><kbd>arrows</kbd> walk · <kbd>space</kbd> in and out · <kbd>shift</kbd> sprint · <kbd>1</kbd> <kbd>2</kbd> street and town</p>
+  <p id="help"><kbd>arrows</kbd> walk · <kbd>space</kbd> A: in and out · <kbd>shift</kbd> B: sprint · <kbd>1</kbd> <kbd>2</kbd> street and town</p>
 </main>
 
 <dialog id="settings">
   <form method="dialog">
-    <label for="name">Your name on the street</label>
-    <input id="name" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
-    <small>Up to 8 letters or digits, shown above your character. Kept on this device only.</small>
+    <h2 tabindex="-1" autofocus>Settings</h2>
+    <label for="name">Name</label>
+    <input id="name" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <small>Shows above your head. Up to 8 letters or digits.</small>
+    <div id="volrow">
+      <label for="vol">Volume</label>
+      <input id="vol" type="range" min="0" max="100" step="1">
+      <small>How loud the radio is.</small>
+    </div>
+    <small id="volnote" hidden>Volume: use your phone's volume buttons. The speaker button mutes.</small>
     <div class="row"><button value="cancel">Cancel</button><button class="go" value="save">Save</button></div>
   </form>
 </dialog>
@@ -599,7 +613,8 @@
       p.y = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * speed));
       const out = action || (two && keys.down && p.y >= ROOM.maxY && p.x + 6 >= 50 && p.x + 6 <= 78);
       if (out) {
-        const d = doorSpot(st.world.houses[st.inside]);
+        /* inside is a station, and the town's houses are not in station order */
+        const d = doorSpot(st.world.houses.find((hs) => hs.i === st.inside));
         st.inside = -1; p.x = d.x; p.y = d.y; p.dir = d.dir;
       }
     } else {
@@ -768,9 +783,12 @@ const fb = new Uint8Array(S.W * S.H);
 const keys = { left: false, right: false, up: false, down: false, run: false };
 const DIRS = ['up', 'down', 'left', 'right'];
 const dpad = $('dpad'), cap = $('cap'), btnA = $('a'), btnB = $('b'), mode = $('mode');
-let st, action = false, started = false, myName = '';
-
-try { myName = localStorage.getItem('street.name') || ''; } catch (e) { /* private window: no saved name */ }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('street.' + k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('street.' + k, v); } catch (e) { /* private window: fine for this visit */ } },
+};
+let st, action = false, started = false;
+let myName = store.get('name', ''), master = +store.get('volume', '80') / 100, muted = store.get('muted', '0') === '1';
 
 function setMode(m) {
   st = S.create(m, (Math.random() * 1e9) | 0);
@@ -778,7 +796,26 @@ function setMode(m) {
   mode.setAttribute('aria-checked', m === '2d');
   dpad.classList.toggle('one', m === '1d');
 }
-mode.onclick = () => setMode(st.mode === '1d' ? '2d' : '1d');
+
+/* Touch: stop the browser's own gestures on the device (the iOS text lens and its zoom, double-tap
+ * zoom, pinch). That also stops clicks from touches, so every control below listens to pointers. */
+document.addEventListener('touchstart', (e) => { if (!e.target.closest('dialog')) e.preventDefault(); }, { passive: false });
+document.addEventListener('touchmove', (e) => { if (!e.target.closest('dialog')) e.preventDefault(); }, { passive: false });
+for (const ev of ['gesturestart', 'gesturechange', 'dblclick', 'contextmenu', 'selectstart']) {
+  document.addEventListener(ev, (e) => { if (!e.target.closest || !e.target.closest('dialog')) e.preventDefault(); });
+}
+
+/* a control that fires on release, and looks pressed meanwhile */
+function tap(el, fn) {
+  el.addEventListener('pointerdown', (e) => { el.setPointerCapture(e.pointerId); el.classList.add('on'); });
+  el.addEventListener('pointerup', () => { if (el.classList.contains('on')) fn(); el.classList.remove('on'); });
+  el.addEventListener('pointercancel', () => el.classList.remove('on'));
+}
+/* a control that is down while held */
+function hold(el, down, up) {
+  el.addEventListener('pointerdown', (e) => { el.setPointerCapture(e.pointerId); el.classList.add('on'); down(); });
+  for (const ev of ['pointerup', 'pointercancel']) el.addEventListener(ev, () => { el.classList.remove('on'); up(); });
+}
 
 /* the cross tilts towards the pressed side, and its arrows light */
 function show() {
@@ -799,56 +836,72 @@ dpad.addEventListener('pointermove', (e) => { if (dpad.hasPointerCapture(e.point
 dpad.addEventListener('pointerup', lift);
 dpad.addEventListener('pointercancel', lift);
 
-function hold(el, down, up) {
-  el.addEventListener('pointerdown', (e) => { el.setPointerCapture(e.pointerId); el.classList.add('on'); down(); e.preventDefault(); });
-  for (const ev of ['pointerup', 'pointercancel']) el.addEventListener(ev, () => { el.classList.remove('on'); up(); });
-}
 hold(btnA, () => { action = true; }, () => {});
 hold(btnB, () => { keys.run = true; }, () => { keys.run = false; });
-addEventListener('contextmenu', (e) => e.preventDefault());
+tap(mode, () => setMode(st.mode === '1d' ? '2d' : '1d'));
 
 const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down', Shift: 'run' };
 addEventListener('keydown', (e) => {
   if ($('settings').open) return;
-  started = true;
+  wake();
   if (KEY[e.key]) { keys[KEY[e.key]] = true; if (e.key === 'Shift') btnB.classList.add('on'); show(); e.preventDefault(); }
   else if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) { action = true; btnA.classList.add('on'); } e.preventDefault(); }
   else if (e.key === '1') setMode('1d');
   else if (e.key === '2') setMode('2d');
+  else if (e.key === 'm') setMuted(!muted);
 });
 addEventListener('keyup', (e) => {
   if (KEY[e.key]) { keys[KEY[e.key]] = false; if (e.key === 'Shift') btnB.classList.remove('on'); show(); }
   if (e.key === ' ' || e.key === 'Enter') btnA.classList.remove('on');
 });
-addEventListener('pointerdown', () => { started = true; });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; show(); });
 
-/* settings: the name over your character, kept in this browser */
-$('cog').onclick = () => { $('name').value = myName; $('settings').showModal(); };
-$('settings').addEventListener('close', () => {
-  if ($('settings').returnValue !== 'save') return;
-  myName = $('name').value.toUpperCase().split('').filter((c) => c !== ' ' && S.FONT[c]).join('').slice(0, 8);
-  st.p.name = myName;
-  try { localStorage.setItem('street.name', myName); } catch (e) { /* not saved: fine for this visit */ }
-});
+/* ---- sound: the nearest houses' own streams, played directly, each fading towards its gain ---- */
+/* iOS ignores an element's volume (it always plays at 1). There, only the loudest stream is
+ * unmuted, and loudness is the phone's own buttons. */
+const canVolume = (() => { const a = new Audio(); a.volume = 0.5; return a.volume === 0.5; })();
+const playing = new Map();   /* station -> { a: its element, gain: our own fade, never read back from the element } */
 
-/* sound: the nearest houses' own streams, played directly, each fading towards its gain */
-const playing = new Map();
 function sound() {
   const want = started ? S.sound(st) : [];
   for (const w of want) {
     if (playing.has(w.i)) continue;
     const a = new Audio(w.url);
-    a.volume = 0;
+    a.volume = canVolume ? 0 : 1; a.muted = true;
     a.play().catch(() => {});
-    playing.set(w.i, a);
+    playing.set(w.i, { a, gain: 0 });
   }
-  for (const [i, a] of playing) {
-    const w = want.find((e) => e.i === i), target = w ? w.gain : 0;
-    a.volume = Math.max(0, Math.min(1, a.volume + Math.max(-0.04, Math.min(0.04, target - a.volume))));
-    if (!w && a.volume <= 0.001) { a.pause(); a.removeAttribute('src'); a.load(); playing.delete(i); }
+  let loud = null;
+  for (const [i, e] of playing) {
+    const w = want.find((x) => x.i === i), target = w ? w.gain : 0;
+    e.gain += Math.max(-0.04, Math.min(0.04, target - e.gain));
+    if (!w && e.gain <= 0.001) { e.a.pause(); e.a.removeAttribute('src'); e.a.load(); playing.delete(i); continue; }
+    if (!loud || e.gain > loud.gain) loud = e;
+  }
+  for (const e of playing.values()) {
+    if (canVolume) { e.a.volume = Math.max(0, Math.min(1, e.gain * master)); e.a.muted = muted; }
+    else e.a.muted = muted || e !== loud || e.gain < 0.03;
   }
 }
+/* the first touch or key: sound may start. Called from the gesture itself, which iOS wants. */
+function wake() { if (!started) { started = true; sound(); } }
+addEventListener('pointerup', wake);
+addEventListener('touchend', wake);
+
+function setMuted(m) { muted = m; $('mute').setAttribute('aria-pressed', m); store.set('muted', m ? '1' : '0'); }
+tap($('mute'), () => setMuted(!muted));
+setMuted(muted);
+
+/* ---- settings: your name and the volume, kept in this browser ---- */
+$('volrow').hidden = !canVolume; $('volnote').hidden = canVolume;
+tap($('cog'), () => { $('name').value = myName; $('vol').value = Math.round(master * 100); $('settings').showModal(); });
+$('vol').addEventListener('input', () => { master = $('vol').value / 100; });
+$('settings').addEventListener('close', () => {
+  if ($('settings').returnValue !== 'save') { master = +store.get('volume', '80') / 100; return; }
+  myName = $('name').value.toUpperCase().split('').filter((c) => c !== ' ' && S.FONT[c]).join('').slice(0, 8);
+  st.p.name = myName;
+  store.set('name', myName); store.set('volume', String(Math.round(master * 100)));
+});
 
 function draw() {
   const d = new Date();
@@ -862,7 +915,7 @@ function draw() {
 }
 
 function tick(now) {
-  if (S.advance(st, now, keys, action)) { action = false; btnA.classList.toggle('inside', st.inside >= 0); sound(); draw(); }
+  if (S.advance(st, now, keys, action)) { action = false; sound(); draw(); }
   requestAnimationFrame(tick);
 }
 setMode('2d');
