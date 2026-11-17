@@ -18,7 +18,7 @@
     font: 14px/1.5 ui-monospace, Menlo, monospace; padding: 22px 16px 16px; }
   main { width: min(100%, 420px); }
   .case { position: relative; background: linear-gradient(var(--case), var(--case-lo)); border-radius: 28px 28px 44px 28px;
-    padding: 24px 22px 26px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d; }
+    padding: 24px 22px 52px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d; }
   .bezel { padding: 10px; border-radius: 10px; background: #1b1b19; box-shadow: 0 1px 0 #ffffff26, 0 2px 5px #00000080 inset; }
   canvas { display: block; width: 100%; aspect-ratio: 1; image-rendering: pixelated; background: var(--lcd); border-radius: 3px; }
 
@@ -34,7 +34,7 @@
   .slide-print { position: absolute; top: 9px; right: 46px; width: 56px; display: flex; justify-content: space-around;
     font-size: 9px; letter-spacing: 1px; color: var(--print); pointer-events: none; }
 
-  .deck { display: grid; grid-template-columns: 132px 1fr 132px; align-items: center; margin-top: 22px; }
+  .deck { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
   .dpad { position: relative; width: 132px; height: 132px; cursor: pointer; }
   .dpad svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
   .dpad .arrow { fill: var(--legend); opacity: .35; }
@@ -62,7 +62,7 @@
   #a { right: 0; top: 6px; }
   #b { left: 20px; top: 38px; }
 
-  .small { display: flex; flex-direction: column; gap: 10px; justify-self: center; align-self: end; }
+  .small { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 14px; }   /* mute and settings, side by side at the foot of the case */
   .cog { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--key-edge);
     color: var(--legend); padding: 0; display: grid; place-items: center; cursor: pointer;
     background: radial-gradient(circle at 50% 30%, #47473f, var(--key-lo) 70%);
@@ -92,7 +92,7 @@
   dialog li b { color: var(--ink); font-weight: 400; }
   @media (pointer: coarse) {
     body { padding-top: 26px; }
-    .case { padding: 34px 22px 46px; }   /* room above the screen and below the controls for a hand */
+    .case { padding: 34px 22px 60px; }   /* room above the screen and below the controls for a hand */
     .deck { margin-top: 34px; }
   }
 </style>
@@ -137,18 +137,18 @@
           <path class="arrow" data-k="right" data-at="116,66" d="M120 66l-9-7v14z"/>
         </svg>
       </div>
-      <div class="small">
-        <button class="cog" id="mute" aria-label="Mute" aria-pressed="false">
-          <svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="on-wave" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
-        </button>
-        <button class="cog" id="cog" aria-label="Settings">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-width="3.4" stroke-dasharray="3.34 3.34"/><circle cx="12" cy="12" r="5.6" stroke-width="2.6"/></svg>
-        </button>
-      </div>
       <div class="ab">
         <button class="btn" id="b" aria-label="B: sprint">B</button>
         <button class="btn" id="a" aria-label="A: go in or out">A</button>
       </div>
+    </div>
+    <div class="small">
+      <button class="cog" id="mute" aria-label="Mute" aria-pressed="false">
+        <svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="on-wave" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+      </button>
+      <button class="cog" id="cog" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-width="3.4" stroke-dasharray="3.34 3.34"/><circle cx="12" cy="12" r="5.6" stroke-width="2.6"/></svg>
+      </button>
     </div>
   </div>
 </main>
@@ -307,7 +307,7 @@
   }
 
   /* ground: marks on a 16 px grid, so nothing strobes at the 2 px walk step.
-   * '.' grass  ',' street setts  '=' paving  'r' road  '~' water  '#' planks  'f' woods (grass with a tree on it)  'f' woods */
+   * '.' grass  ',' street setts  '=' paving  'r' road  '~' water  '#' planks  'f' woods  'f' woods (grass with a tree on it)  'f' woods */
   const MARKS = {
     '.': [[2, 4], [3, 5], [4, 4], [10, 12], [11, 13], [12, 12], [13, 3]],
   };
@@ -325,6 +325,12 @@
       if (green(tx, ty + 1)) rect(x, y + 15, T, 1, 1);
       if (green(tx - 1, ty)) rect(x, y, 1, T, 1);
       if (green(tx + 1, ty)) rect(x + 15, y, 1, T, 1);
+    } else if (k === 'f') {
+      /* woods: treetops packed edge to edge, dark between them */
+      rect(x, y, T, T, 1); disc(x + 8, y + 7, 7, 0);
+      const m = (tx + ty) % 2 ? [[5, 4], [6, 3], [10, 8], [11, 7], [6, 10], [9, 3]] : [[9, 5], [10, 4], [5, 8], [6, 7], [10, 11], [7, 3]];
+      for (const [i, j] of m) px(x + i, y + j, 1);
+      rect(x + 7, y + 14, 2, 2, 0);
     } else if (k === 'r') {
       if (tx % 2 === 0) rect(x + 2, y + 15, 12, 1, 1);
       px(x + 5, y + 5, 1); px(x + 12, y + 10, 1);
@@ -499,8 +505,9 @@
     return finish({ mode: '1d', w, h, g, houses, objs, spawn: [1, 5] });
   }
 
-  /* the town: nothing walkable that does not lead to a station. Woods ('f') close it in on
-   * three sides and the sea on the fourth. A short high street; an avenue down to the plaza,
+  /* the town: woods ('f') only as its outer edge, the sea to the south. Inside, grass is for
+   * walking: a green either side of the plaza, each also a way from the high street down to the
+   * waterfront, so no part of the map is far from a station. A short high street; an avenue down to the plaza,
    * where NTS 1 and 2 face the fountain either side of it; houses with side doors down the
    * plaza's west and east; a waterfront street along its south edge with a pair of houses at
    * each end; and a pier out to an island with the two stations from overseas */
@@ -508,6 +515,9 @@
     const w = 44, h = 32, g = new Array(w * h).fill('f');
     const fill = (x0, y0, x1, y1, c) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * w + x] = c; };
     fill(0, 21, 43, 31, '~');
+    /* the greens: west and east of the plaza, with a strip up to the plaza's corners and a path down to the waterfront */
+    fill(3, 8, 10, 15, '.'); fill(11, 8, 14, 10, '.'); fill(3, 16, 4, 20, '.'); fill(6, 6, 8, 7, '.');
+    fill(33, 8, 40, 15, '.'); fill(29, 8, 32, 10, '.'); fill(39, 16, 40, 20, '.'); fill(35, 6, 37, 7, '.');
     fill(9, 6, 34, 7, ','); fill(21, 8, 22, 10, ',');   /* high street, avenue */
     fill(14, 11, 29, 20, '=');                          /* plaza */
     fill(5, 20, 38, 20, ','); fill(5, 19, 10, 19, ','); fill(33, 19, 38, 19, ',');   /* waterfront street */
@@ -536,6 +546,9 @@
     put('bench', [[19, 20], [20, 20]]);
     put('fountain', [[21, 15]]);
     put('stall', [[17, 18], [25, 18]]);
+    put('tree', [[5, 10], [8, 12], [4, 14], [38, 10], [35, 12], [39, 14]]);
+    put('flower', [[6, 11], [7, 14], [5, 13], [9, 9], [37, 11], [36, 14], [38, 13], [34, 9]]);
+    put('bench', [[8, 10], [35, 10]]);
     put('boat', [[10, 24], [33, 26], [30, 23], [6, 29]]);
     return finish({ mode: '2d', w, h, g, houses, objs, spawn: [21, 12] });
   }
@@ -628,8 +641,9 @@
     if (sx) p.dir = sx > 0 ? 'r' : 'l';
     st.t += STEP_MS;
     if (st.inside >= 0) {
-      p.x = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * speed));
-      p.y = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * speed));
+      p.run = false; /* no sprinting indoors */
+      p.x = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * SPEED));
+      p.y = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * SPEED));
       const out = action || (two && keys.down && p.y >= ROOM.maxY && p.x + 6 >= 50 && p.x + 6 <= 78);
       if (out) {
         /* inside is a station, and the town's houses are not in station order */
