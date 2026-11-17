@@ -98,23 +98,7 @@
   #mute .off, #mute[aria-pressed="true"] .on-wave { display: none; }
   #mute[aria-pressed="true"] .off { display: block; }
 
-  dialog { border: 1px solid var(--key-edge); border-radius: 14px; padding: 18px; width: min(88vw, 300px); background: var(--case);
-    color: var(--ink); font: inherit; box-shadow: 0 20px 50px #00000080; user-select: text; -webkit-user-select: text; touch-action: auto; }
-  dialog::backdrop { background: #00000080; }
-  dialog h2 { font: inherit; font-weight: 700; margin: 0 0 14px; outline: none; }
-  dialog label { display: block; margin-bottom: 6px; }
-  dialog input[type="text"] { width: 100%; font: inherit; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; padding: 8px 10px;
-    border-radius: 6px; border: 1px solid var(--key-edge); background: var(--lcd); color: #1c1c1a; }
-  dialog input[type="range"] { width: 100%; accent-color: var(--ink); }
-  dialog small { display: block; color: var(--dim); margin: 6px 0 16px; }
-  dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
-  dialog button { font: inherit; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--dim); background: transparent;
-    color: inherit; cursor: pointer; }
-  dialog button.go { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-  dialog ul { list-style: none; margin: 0 0 16px; padding: 0; color: var(--dim); }
-  dialog li { display: flex; justify-content: space-between; gap: 12px; }
-  dialog li b { color: var(--ink); font-weight: 400; }
   @media (pointer: coarse) {
     body { padding-top: 26px; }
     .case { padding: 34px 22px 74px; }   /* room above the screen and below the controls for a hand */
@@ -181,25 +165,6 @@
   </aside>
 </main>
 
-<dialog id="settings">
-  <form method="dialog">
-    <h2 tabindex="-1" autofocus>Settings</h2>
-    <label for="name">Name</label>
-    <input id="name" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
-    <small>Shows above your head. Up to 8 letters or digits.</small>
-    <label>Controls</label>
-    <ul>
-      <li><span>Walk</span><b>cross · arrow keys</b></li>
-      <li><span>Go in, go out</span><b>A · space</b></li>
-      <li><span>Sit, stand up</span><b>A at a seat</b></li>
-      <li><span>Sprint</span><b>hold B · shift</b></li>
-      <li><span>Street or town</span><b>top switch</b></li>
-      <li><span>Mute</span><b>speaker · M</b></li>
-      <li id="volhelp"><span>Volume</span><b>slider on the right edge</b></li>
-    </ul>
-    <div class="row"><button value="cancel">Cancel</button><button class="go" value="save">Save</button></div>
-  </form>
-</dialog>
 
 <script>
 /* Radio street, browser prototype: the same stations, art and sound rules as
@@ -1085,9 +1050,358 @@
     lines.forEach((s, k) => text((W - textW(s)) >> 1, y + 3 + k * 7, s, 1));
   }
 
-  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, layout, sound, atDoor, nearest, doorSpot,
+  /* the scene's pen, for what the page draws over a frame (its menu): pixels, boxes, the 3x5 font */
+  const gfx = { on(out) { fb = out; cx = cy = 0; }, rect, box, px, text, textW };
+
+  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, gfx, layout, sound, atDoor, nearest, doorSpot,
     ROOM, SPEED, SPRINT, feetBlocked, onSeating: (lay, x, y) => onSeating(lay, x, y) };   /* the last row: what the multiplayer server checks moves against */
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Street = api;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* Radiotown multiplayer: what goes over the wire, shared by the page (net.js) and the server.
+ * Text frames are JSON for rare events; binary frames carry the three hot messages:
+ *   POS    client -> server, 7 bytes:  type, x u16, y u16, flags, inside
+ *   SNAP   server -> client, 6 + 8n:   type, tick u32, n, then n x (id u16, x u16, y u16, flags, inside)
+ *   COUNTS server -> client, 2 + 2n:   type, your own house as the server sees it, listeners per station u16
+ * flags: direction (2 bits), moving, run, seat + 1 (4 bits, 0 = standing). inside: station, 255 = outdoors.
+ * Indoors x and y are room coordinates. Numbers are little-endian. */
+(function (root) {
+  'use strict';
+
+  const VERSION = 1;
+  const POS = 2, SNAP = 1, COUNTS = 3;
+  const OUT = 255;                 /* inside: outdoors */
+  const TICK_MS = 100;
+  const MAX_SEATS = 15;            /* what four bits of flags can name */
+  const DIRS = ['d', 'u', 'l', 'r'];
+
+  function flagsOf(dir, moving, run, seat) {
+    const d = Math.max(0, DIRS.indexOf(dir));
+    return d | (moving ? 4 : 0) | (run ? 8 : 0) | (((seat >= 0 ? seat + 1 : 0) & 15) << 4);
+  }
+  function readFlags(f) { return { dir: DIRS[f & 3], moving: !!(f & 4), run: !!(f & 8), seat: (f >> 4) - 1 }; }
+
+  /* e: {x, y, flags, inside} with inside -1 for outdoors */
+  function encodePos(e) {
+    const b = new Uint8Array(7), v = new DataView(b.buffer);
+    b[0] = POS; v.setUint16(1, e.x, true); v.setUint16(3, e.y, true); b[5] = e.flags; b[6] = e.inside < 0 ? OUT : e.inside;
+    return b;
+  }
+  function view(buf) {
+    return buf instanceof ArrayBuffer ? new DataView(buf) : new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  }
+  function decodePos(buf) {
+    const v = view(buf);
+    if (v.byteLength !== 7 || v.getUint8(0) !== POS) return null;
+    const inside = v.getUint8(6);
+    return { x: v.getUint16(1, true), y: v.getUint16(3, true), flags: v.getUint8(5), inside: inside === OUT ? -1 : inside };
+  }
+
+  /* list: [{id, x, y, flags, inside}], at most 255 */
+  function encodeSnap(tick, list) {
+    const n = Math.min(255, list.length), b = new Uint8Array(6 + 8 * n), v = new DataView(b.buffer);
+    b[0] = SNAP; v.setUint32(1, tick >>> 0, true); b[5] = n;
+    for (let k = 0; k < n; k++) {
+      const e = list[k], o = 6 + 8 * k;
+      v.setUint16(o, e.id, true); v.setUint16(o + 2, e.x, true); v.setUint16(o + 4, e.y, true);
+      b[o + 6] = e.flags; b[o + 7] = e.inside < 0 ? OUT : e.inside;
+    }
+    return b;
+  }
+  function decodeSnap(buf) {
+    const v = view(buf);
+    if (v.byteLength < 6 || v.getUint8(0) !== SNAP) return null;
+    const n = v.getUint8(5);
+    if (v.byteLength !== 6 + 8 * n) return null;
+    const list = [];
+    for (let k = 0; k < n; k++) {
+      const o = 6 + 8 * k, inside = v.getUint8(o + 7);
+      list.push({ id: v.getUint16(o, true), x: v.getUint16(o + 2, true), y: v.getUint16(o + 4, true), flags: v.getUint8(o + 6), inside: inside === OUT ? -1 : inside });
+    }
+    return { tick: v.getUint32(1, true), list };
+  }
+
+  function encodeCounts(self, counts) {
+    const b = new Uint8Array(2 + 2 * counts.length), v = new DataView(b.buffer);
+    b[0] = COUNTS; b[1] = self < 0 ? OUT : self;
+    for (let k = 0; k < counts.length; k++) v.setUint16(2 + 2 * k, Math.min(65535, counts[k]), true);
+    return b;
+  }
+  function decodeCounts(buf) {
+    const v = view(buf);
+    if (v.byteLength < 2 || v.getUint8(0) !== COUNTS || (v.byteLength & 1)) return null;
+    const counts = [], self = v.getUint8(1);
+    for (let o = 2; o < v.byteLength; o += 2) counts.push(v.getUint16(o, true));
+    return { self: self === OUT ? -1 : self, counts };
+  }
+  function typeOf(buf) { const v = view(buf); return v.byteLength ? v.getUint8(0) : 0; }
+
+  /* a name as the page shows it: upper case, only what the pixel font has, no spaces, 8 at most */
+  function cleanName(s, font) {
+    return String(s === undefined || s === null ? '' : s).slice(0, 64).toUpperCase().split('')
+      .filter((c) => c !== ' ' && Object.prototype.hasOwnProperty.call(font, c)).join('').slice(0, 8);
+  }
+
+  function fnv(s) {
+    let h = 0x811c9dc5;
+    for (let k = 0; k < s.length; k++) { h ^= s.charCodeAt(k); h = Math.imul(h, 0x01000193); }
+    return h >>> 0;
+  }
+  /* a look is one byte: bit 0 hair, bit 1 shirt, the rest kept for later */
+  function defaultLook(pid) { return fnv(String(pid)) & 3; }
+  function lookOf(hair, shirt) { return (hair ? 1 : 0) | (shirt ? 2 : 0); }
+
+  /* what the page and the server must agree on to share a town: the tiles, the houses, the
+   * stations in their order, and every room's seats and furniture. S is street.js. */
+  function mapHash(S) {
+    const w = S.create('2d').world, parts = [VERSION, w.w, w.h, w.g.join('')];
+    for (const hs of w.houses) parts.push(hs.i, hs.tx, hs.ty, hs.face);
+    S.STATIONS.forEach((s, i) => { const L = S.layout(i); parts.push(s.name, JSON.stringify(L.seats), JSON.stringify(L.blocks)); });
+    return fnv(parts.join('|')).toString(16);
+  }
+
+  const api = { VERSION, POS, SNAP, COUNTS, OUT, TICK_MS, MAX_SEATS, DIRS, flagsOf, readFlags, encodePos, decodePos, encodeSnap, decodeSnap,
+    encodeCounts, decodeCounts, typeOf, cleanName, fnv, defaultLook, lookOf, mapHash };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Proto = api;
+})(typeof self !== 'undefined' ? self : this);
+</script>
+<script>
+/* Radiotown multiplayer, the page's side: the other visitors, live.
+ *
+ * You walk on your own, as without a server; after each step the page calls send(), which
+ * reports where you are (protocol.js), and apply(), which fills st.others (what street.js draws)
+ * and st.counts (listeners per station, the whole town's). With no server, or none reachable,
+ * the town is simply empty: nothing here ever holds up or corrects your own movement.
+ *
+ * The others are drawn a quarter of a second in the past, between two positions the server sent
+ * (snapshot interpolation), so they move evenly whatever the network does in between. A character
+ * is only ever placed outright when that is what happened: it came into view, went through a
+ * door, sat down or stood up, or is further off than a short run could cover. */
+(function (root) {
+  'use strict';
+  const P = typeof module !== 'undefined' && module.exports ? require('./protocol.js') : root.Proto;
+
+  const DELAY_TICKS = 2.5;     /* how far in the past the others are drawn: 250 ms at ten snapshots a second */
+  const KEEP = 16;             /* positions remembered per player */
+  const SNAP_PX = 48;          /* further off than this: place, do not slide */
+  const CHASE_PX = 6;          /* else close the gap by at most this much a step: twice a sprint */
+  const STEP_MS = 1000 / 27;
+
+  /* ---- the others' positions over time. Pure: ticks in, drawables out. ---- */
+  function makeInterp() {
+    const ents = new Map();    /* id -> { samples, shown, out } */
+
+    function add(id, name, look) {
+      const e = ents.get(id) || { samples: [], shown: null, out: { id, name: '', hair: 0, shirt: 0, x: 0, y: 0, dir: 'd', moving: false, run: false, inside: -1, seat: -1 } };
+      e.out.name = name; e.out.hair = look & 1; e.out.shirt = (look >> 1) & 1;
+      ents.set(id, e);
+    }
+    function remove(id) { ents.delete(id); }
+    function clear() { ents.clear(); }
+    /* forget the way here, keep the latest place: the next draw puts everyone where they are */
+    function reset() { for (const e of ents.values()) { e.samples = e.samples.slice(-1); e.shown = null; } }
+
+    function sample(id, tick, s) {
+      const e = ents.get(id);
+      if (!e) return;
+      const f = P.readFlags(s.flags), q = e.samples, last = q[q.length - 1];
+      const now = { tick, x: s.x, y: s.y, inside: s.inside, seat: f.seat, dir: f.dir, run: f.run };
+      if (last && tick <= last.tick) { q[q.length - 1] = Object.assign(now, { tick: last.tick }); return; }
+      /* the server only sends a player when something changed. Whoever stood still for a while was
+       * standing there until a tick ago: without that, the first step would be a slow glide. */
+      if (last && last.tick < tick - 1) q.push(Object.assign({}, last, { tick: tick - 1 }));
+      q.push(now);
+      if (q.length > KEEP) q.splice(0, q.length - KEEP);
+    }
+
+    /* where a player is at render tick rt */
+    function pose(e, rt) {
+      const q = e.samples;
+      let i = 0;
+      while (i + 1 < q.length && q[i + 1].tick <= rt) i++;
+      if (i > 1) { q.splice(0, i - 1); i = 1; }
+      const a = q[i], b = q[i + 1];
+      /* nothing newer (a gap: hold, never guess ahead), or a change that is a cut, not a move */
+      if (!b || rt <= a.tick || a.inside !== b.inside || a.seat >= 0 || b.seat >= 0) return { x: a.x, y: a.y, inside: a.inside, seat: a.seat, dir: a.dir, run: false, moving: false };
+      const f = (rt - a.tick) / (b.tick - a.tick), moving = a.x !== b.x || a.y !== b.y;
+      return { x: Math.round(a.x + (b.x - a.x) * f), y: Math.round(a.y + (b.y - a.y) * f), inside: a.inside, seat: -1,
+        dir: moving ? b.dir : a.dir, run: moving && b.run, moving };
+    }
+
+    /* advance the drawn characters to render tick rt; `steps` game steps went by since the last call */
+    function update(rt, steps) {
+      const list = [];
+      for (const e of ents.values()) {
+        if (!e.samples.length) continue;
+        const to = pose(e, rt), o = e.out, sh = e.shown;
+        const far = !sh || sh.inside !== to.inside || sh.seat !== to.seat || Math.max(Math.abs(sh.x - to.x), Math.abs(sh.y - to.y)) > SNAP_PX;
+        let x = to.x, y = to.y, chasing = false;
+        if (!far && (sh.x !== x || sh.y !== y)) {
+          const max = Math.max(1, Math.round(CHASE_PX * steps));
+          x = sh.x + Math.max(-max, Math.min(max, x - sh.x)); y = sh.y + Math.max(-max, Math.min(max, y - sh.y));
+          chasing = x !== to.x || y !== to.y;
+        }
+        e.shown = { x, y, inside: to.inside, seat: to.seat };
+        o.x = x; o.y = y; o.inside = to.inside; o.seat = to.seat; o.dir = to.dir; o.run = to.run; o.moving = to.moving || chasing;
+        list.push(o);
+      }
+      return list;
+    }
+
+    return { add, remove, clear, reset, sample, update, ents };
+  }
+
+  /* ---- the connection ----
+   * o: { url, S (street.js), pid, name, look, WebSocket, now(), lag, jitter, stall, stallEvery }
+   * lag/jitter/stall (ms) hold messages back in both directions, in order, for testing: a line
+   * that is slow, uneven, or stops dead for `stall` ms every `stallEvery` ms (TCP never loses a
+   * message; what loss looks like here is a stall and then everything at once). */
+  function create(o) {
+    const S = o.S, WS = o.WebSocket || root.WebSocket, clock = o.now || (() => performance.now());
+    const interp = makeInterp(), MAP = P.mapHash(S);
+    const lag = +o.lag || 0, jitter = +o.jitter || 0, stall = +o.stall || 0, stallEvery = +o.stallEvery || 10000;
+    const net = { status: 'off', id: -1, why: '', interp };
+    let ws = null, st = null, name = o.name || '', look = o.look | 0;
+    let offset = null, tickMs = P.TICK_MS, counts = null, self = -1, shownCounts = null;
+    let sent = null, sentAt = 0, lastMsg = 0, lastApply = null, retry = 1000, retryTimer = null, watch = null, noRetry = false;
+    const due = { in: 0, out: 0 };
+
+    function held(dir, fn) {
+      if (!lag && !jitter && !stall) return fn();
+      const now = clock();
+      let at = Math.max(due[dir], now + lag + Math.random() * jitter);
+      if (stall && at % stallEvery < stall) at += stall - at % stallEvery;
+      due[dir] = at;
+      setTimeout(fn, at - now);
+    }
+    function emit(sock, data) { held('out', () => { if (sock === ws && sock.readyState === 1) sock.send(data); }); }
+
+    function gone() {
+      interp.clear(); offset = null; counts = null; sent = null; net.id = -1;
+      if (st) { st.others = []; st.counts = null; }
+    }
+    function close() {
+      if (ws) { const w = ws; ws = null; w.onopen = w.onmessage = w.onclose = w.onerror = null; try { w.close(); } catch (e) { /* never opened */ } }
+      gone();
+    }
+    function lost() {
+      close();
+      if (net.status === 'off') return;
+      net.status = 'solo';
+      if (noRetry) return;
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(connect, retry * (0.5 + Math.random()));
+      retry = Math.min(30000, retry * 2);
+    }
+
+    function connect() {
+      clearTimeout(retryTimer);
+      if (net.status === 'off' || ws || !st) return;
+      net.status = 'connecting';
+      let sock;
+      try { sock = new WS(o.url); } catch (e) { return lost(); }
+      ws = sock; sock.binaryType = 'arraybuffer'; lastMsg = clock();
+      sock.onopen = () => emit(sock, JSON.stringify({ t: 'hello', v: P.VERSION, map: MAP, pid: o.pid, name, look,
+        x: st.p.x, y: st.p.y, inside: st.inside }));
+      sock.onmessage = (ev) => held('in', () => { if (sock === ws) handle(ev.data); });
+      sock.onclose = sock.onerror = () => { if (sock === ws) lost(); };
+    }
+
+    function handle(data) {
+      lastMsg = clock();
+      if (typeof data !== 'string') {
+        const type = P.typeOf(data);
+        if (type === P.SNAP) {
+          const m = P.decodeSnap(data);
+          if (!m) return;
+          /* the server's clock, as its ticks arrive: quick to follow one that came sooner, slow to
+           * follow one that came late, so a held-up snapshot does not drag the clock back */
+          const want = m.tick * tickMs - lastMsg;
+          if (offset === null || Math.abs(want - offset) > 500) offset = want;
+          else offset += (want - offset) * (want > offset ? 0.2 : 0.02);
+          for (const e of m.list) interp.sample(e.id, m.tick, e);
+        } else if (type === P.COUNTS) {
+          const m = P.decodeCounts(data);
+          if (m) { counts = m.counts; self = m.self; }
+        }
+        return;
+      }
+      let m;
+      try { m = JSON.parse(data); } catch (e) { return; }
+      if (m.t === 'welcome') { net.status = 'on'; net.id = m.id; tickMs = m.tickMs || P.TICK_MS; retry = 1000; sent = null; }
+      else if (m.t === 'see') {
+        for (const id of m.del || []) interp.remove(id);
+        for (const [id, n, l] of m.add || []) interp.add(id, n, l);
+      } else if (m.t === 'who') { if (interp.ents.has(m.id)) interp.add(m.id, m.name, m.look); }
+      else if (m.t === 'unseat') { if (st && st.seat >= 0) { st.seat = -1; st.idle = 0; } }   /* someone sat there first */
+      else if (m.t === 'bye') {
+        net.why = m.why;
+        /* a full town may have room later; an old page, a second tab or a ban will not get better by asking again */
+        if (m.why === 'full') retry = 60000; else noRetry = true;
+        lost();
+      }
+    }
+
+    /* take part from this scene on (only the town is shared: the 1D street is always your own) */
+    net.attach = function (scene) {
+      close(); clearTimeout(retryTimer);
+      st = scene; net.status = 'off';
+      if (!o.url || !WS || !scene || scene.mode !== '2d') return;
+      net.status = 'solo'; noRetry = false; retry = 1000;
+      if (!watch) watch = setInterval(() => { if (ws && clock() - lastMsg > 5000) lost(); }, 1000);
+      connect();
+    };
+    net.detach = function () { clearInterval(watch); watch = null; clearTimeout(retryTimer); net.status = 'off'; close(); st = null; };
+
+    /* report where you are, if that changed (and now and then anyway, so the server knows you are there) */
+    net.send = function (scene, now) {
+      if (net.status !== 'on' || scene !== st) return;
+      const p = scene.p, cur = { x: Math.max(0, Math.min(65535, p.x | 0)), y: Math.max(0, Math.min(65535, p.y | 0)),
+        flags: P.flagsOf(p.dir, p.moving, p.run, scene.seat), inside: scene.inside };
+      if (sent && sent.x === cur.x && sent.y === cur.y && sent.flags === cur.flags && sent.inside === cur.inside && now - sentAt < 2000) return;
+      sent = cur; sentAt = now;
+      emit(ws, P.encodePos(cur));
+    };
+
+    /* fill in who to draw and the listener counts, for a frame at `now` */
+    net.apply = function (scene, now) {
+      if (scene !== st) return;
+      if (net.status !== 'on' || offset === null) { scene.others = []; scene.counts = null; lastApply = now; return; }
+      const steps = lastApply === null ? 1 : Math.max(0, Math.min(12, (now - lastApply) / STEP_MS));
+      lastApply = now;
+      scene.others = interp.update((now + offset) / tickMs - DELAY_TICKS, steps);
+      if (counts) {
+        /* the server's count has you where it last saw you; show yourself where you are */
+        if (!shownCounts || shownCounts.length !== counts.length) shownCounts = new Array(counts.length);
+        for (let i = 0; i < counts.length; i++) shownCounts[i] = Math.max(0, counts[i] - (self === i ? 1 : 0) + (scene.inside === i ? 1 : 0));
+        scene.counts = shownCounts;
+      } else scene.counts = null;
+    };
+
+    /* a new name or look: told at most every 2.5 s each (the server ignores them faster than every 2), the latest wins */
+    const told = { name: { at: -1e9, timer: null }, look: { at: -1e9, timer: null } };
+    function tell(kind) {
+      const k = told[kind], wait = k.at + 2500 - clock();
+      clearTimeout(k.timer);
+      if (wait > 0) { k.timer = setTimeout(() => tell(kind), wait); return; }
+      if (net.status !== 'on') return;                 /* the next hello carries it */
+      k.at = clock();
+      emit(ws, JSON.stringify(kind === 'name' ? { t: 'name', name } : { t: 'look', look }));
+    }
+    net.setName = function (n) { if (n !== name) { name = n; tell('name'); } };
+    net.setLook = function (l) { if ((l | 0) !== look) { look = l | 0; tell('look'); } };
+    /* the tab came back: put everyone where they are now, and reconnect at once if the line died meanwhile */
+    net.visible = function () {
+      interp.reset(); lastApply = null;
+      if (net.status === 'solo' && !ws && !noRetry) { retry = 1000; connect(); }
+    };
+    net.info = function () { return { status: net.status, id: net.id, why: net.why, known: interp.ents.size, offset, counts, self }; };
+    return net;
+  }
+
+  const api = { create, makeInterp, DELAY_TICKS, SNAP_PX, CHASE_PX };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Net = api;
 })(typeof self !== 'undefined' ? self : this);
 </script>
 <script>
@@ -1097,7 +1411,7 @@ const ctx = $('lcd').getContext('2d');
 const img = ctx.createImageData(S.W, S.H);
 const fb = new Uint8Array(S.W * S.H);
 const keys = { left: false, right: false, up: false, down: false, run: false };
-const DIRS = ['up', 'down', 'left', 'right'];
+const DIRS = ['up', 'down', 'left', 'right'], IDLE = {};
 const dpad = $('dpad'), btnA = $('a'), btnB = $('b'), mode = $('mode');
 const store = {
   get(k, d) { try { const v = localStorage.getItem('street.' + k); return v === null ? d : v; } catch (e) { return d; } },
@@ -1106,9 +1420,29 @@ const store = {
 let st, action = false, started = false;
 let myName = store.get('name', ''), master = +store.get('volume', '80') / 100, muted = store.get('muted', '0') === '1';
 
+/* ---- the other visitors (net.js). Off until a server is named: the town is then as it was. ----
+ * NET_URL is the production server, e.g. 'wss://radiotown.july.dev/ws'. ?server=ws://localhost:8787
+ * points a page at another one, ?solo=1 turns it off; ?lag= ?jitter= ?stall= (ms) make the line bad, for testing. */
+const NET_URL = '';
+const query = new URLSearchParams(location.search);
+let myId = store.get('id', '');
+if (!/^[a-f0-9]{32}$/.test(myId)) {
+  myId = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+  store.set('id', myId);
+}
+/* your look is st.p.hair and st.p.shirt, kept as street.hair and street.shirt once chosen in the menu; until then it follows from your id */
+const savedLook = () => { const d = Proto.defaultLook(myId); return Proto.lookOf(+store.get('hair', String(d & 1)), +store.get('shirt', String((d >> 1) & 1))); };
+const netUrl = query.get('solo') === '1' ? '' : query.get('server') || NET_URL;
+const net = netUrl ? Net.create({ url: netUrl, S, pid: myId, name: myName, look: savedLook(),
+  lag: query.get('lag'), jitter: query.get('jitter'), stall: query.get('stall'), stallEvery: query.get('stallevery') }) : null;
+document.addEventListener('visibilitychange', () => { if (net && !document.hidden) net.visible(); });
+/* the menu calls this when the name or the look changed: tell the others */
+window.onProfileChange = () => { if (net && st) { net.setName(st.p.name); net.setLook(Proto.lookOf(st.p.hair, st.p.shirt)); } };
+
 function setMode(m) {
   st = S.create(m, (Math.random() * 1e9) | 0);
-  st.p.name = myName;
+  st.p.name = myName; st.p.hair = savedLook() & 1; st.p.shirt = (savedLook() >> 1) & 1;
+  if (net) { if (m === '2d') st.bots = []; net.attach(st); }   /* with a server the town has its real visitors, or nobody */
   mode.setAttribute('aria-checked', m === '2d');
   dpad.classList.toggle('one', m === '1d');
 }
@@ -1207,7 +1541,7 @@ tap(mode, () => setMode(st.mode === '1d' ? '2d' : '1d'));
 
 const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down', Shift: 'run' };
 addEventListener('keydown', (e) => {
-  if ($('settings').open) return;
+  if (menu.key(e)) return;
   wake();
   if (KEY[e.key]) { keys[KEY[e.key]] = true; if (e.key === 'Shift') btnB.classList.add('on'); show(); e.preventDefault(); }
   else if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) { action = true; btnA.classList.add('on'); } e.preventDefault(); }
@@ -1309,8 +1643,8 @@ function setMuted(m) { muted = m; $('mute').setAttribute('aria-pressed', m); sto
 tap($('mute'), () => setMuted(!muted));
 setMuted(muted);
 
-/* ---- settings: your name, kept in this browser, and the list of controls ---- */
-tap($('cog'), () => { $('name').value = myName; $('settings').showModal(); });
+/* ---- settings: on the screen itself, see the menu below ---- */
+tap($('cog'), () => menu.toggle());
 
 /* the volume slider: a knob in a slot in the right edge, up is louder, ten detents */
 const vol = $('vol'), DETENTS = 10, TRAVEL = 132 - 24 - 4;
@@ -1333,18 +1667,124 @@ vol.addEventListener('pointermove', (e) => { if (vol.hasPointerCapture(e.pointer
 vol.addEventListener('pointerup', () => setVolume(master, true));
 setVolume(master, false);
 /* where the page cannot set loudness at all (iOS), the slider would be a dummy: leave it off the case */
-if (!canVolume && !useGraph) { vol.hidden = true; $('volprint').hidden = true; $('volhelp').lastChild.textContent = 'your phone\'s buttons'; }
-$('settings').addEventListener('close', () => {
-  if ($('settings').returnValue !== 'save') return;
-  myName = $('name').value.toUpperCase().split('').filter((c) => c !== ' ' && S.FONT[c]).join('').slice(0, 8);
-  st.p.name = myName;
-  store.set('name', myName);
-});
+if (!canVolume && !useGraph) { vol.hidden = true; $('volprint').hidden = true; }
+
+/* ---- the settings menu, drawn on the screen and worked with the cross, A and B ----
+ * SETTINGS: name, hair, shirt, the controls. NAME is a letter grid, as on a console: the cross
+ * moves, A picks, B rubs out; a keyboard can simply type. Nothing is a web form. */
+const menu = (() => {
+  const G = S.gfx, touch = matchMedia('(pointer: coarse)').matches;
+  const ROWS = ['NAME', 'HAIR', 'SHIRT', 'CONTROLS', 'CLOSE'];
+  const GRID = ['ABCDEFGHI', 'JKLMNOPQR', 'STUVWXYZ-', '012345678'].map((r) => r.split('').map((c, k) => ({ label: c, col: k, w: 1 })));
+  GRID.push([{ label: '9', col: 0, w: 1 }, { label: '.', col: 1, w: 1 }, { label: 'DEL', col: 3, w: 3 }, { label: 'OK', col: 7, w: 2 }]);
+  const HELP = touch
+    ? [['CROSS', 'WALK'], ['A', 'IN - OUT - SIT'], ['B', 'SPRINT'], ['SWITCH', 'STREET - TOWN'], ['SPEAKER', 'MUTE'], ['SLIDER', 'VOLUME']]
+    : [['ARROWS', 'WALK'], ['SPACE', 'IN - OUT - SIT'], ['SHIFT', 'SPRINT'], ['M', 'MUTE'], ['SWITCH', 'STREET - TOWN'], ['SLIDER', 'VOLUME']];
+  const m = { open: false, screen: 'main', row: 0, r: 0, c: 0, draft: '' };
+  const held = {}; let wasRun = false;
+
+  const profile = () => { if (window.onProfileChange) window.onProfileChange(); };
+  function saveName() {
+    myName = m.draft; st.p.name = myName; store.set('name', myName); profile();
+    m.screen = 'main';
+  }
+  function flip(what) {
+    if (what === 'HAIR') { st.p.hair = st.p.hair ? 0 : 1; store.set('hair', String(st.p.hair)); }
+    else { st.p.shirt = st.p.shirt ? 0 : 1; store.set('shirt', String(st.p.shirt)); }
+    profile();
+  }
+  function type(ch) { if (m.draft.length < 8 && ch !== ' ' && S.FONT[ch]) m.draft += ch; }
+  function press(b) {
+    if (m.screen === 'main') {
+      const row = ROWS[m.row];
+      if (b === 'up') m.row = (m.row + ROWS.length - 1) % ROWS.length;
+      else if (b === 'down') m.row = (m.row + 1) % ROWS.length;
+      else if (b === 'B') m.open = false;
+      else if ((b === 'left' || b === 'right') && (row === 'HAIR' || row === 'SHIRT')) flip(row);
+      else if (b === 'A') {
+        if (row === 'NAME') { m.screen = 'name'; m.draft = myName; m.r = 0; m.c = 0; }
+        else if (row === 'CONTROLS') m.screen = 'controls';
+        else if (row === 'CLOSE') m.open = false;
+        else flip(row);
+      }
+    } else if (m.screen === 'controls') {
+      if (b === 'A' || b === 'B') m.screen = 'main';
+    } else {
+      const here = GRID[m.r][m.c];
+      const move = (r) => {   /* to the cell of another row nearest under or over this one */
+        const at = here.col + (here.w - 1) / 2; let best = 0;
+        GRID[r].forEach((cell, k) => { if (Math.abs(cell.col + (cell.w - 1) / 2 - at) < Math.abs(GRID[r][best].col + (GRID[r][best].w - 1) / 2 - at)) best = k; });
+        m.r = r; m.c = best;
+      };
+      if (b === 'left') m.c = (m.c + GRID[m.r].length - 1) % GRID[m.r].length;
+      else if (b === 'right') m.c = (m.c + 1) % GRID[m.r].length;
+      else if (b === 'up') move((m.r + GRID.length - 1) % GRID.length);
+      else if (b === 'down') move((m.r + 1) % GRID.length);
+      else if (b === 'B') { if (m.draft) m.draft = m.draft.slice(0, -1); else m.screen = 'main'; }
+      else if (b === 'A') {
+        if (here.label === 'OK') saveName();
+        else if (here.label === 'DEL') m.draft = m.draft.slice(0, -1);
+        else type(here.label);
+      }
+    }
+  }
+  /* each frame while open: the cross repeats when held, A and B act once a press */
+  function input(now) {
+    for (const k of DIRS) {
+      if (!keys[k]) { held[k] = 0; continue; }
+      if (!held[k]) { held[k] = now + 350; press(k); } else if (now > held[k]) { held[k] = now + 130; press(k); }
+    }
+    if (action) { action = false; press('A'); }
+    if (keys.run && !wasRun) press('B');
+    wasRun = keys.run;
+  }
+  /* a key while open: true if the menu took it. Letters type a name; they must not walk or mute. */
+  function key(e) {
+    if (!m.open) return false;
+    if (e.key === 'Escape') { if (m.screen === 'main') m.open = false; else m.screen = 'main'; return true; }
+    if (m.screen !== 'name') return false;
+    if (e.key === 'Backspace') { m.draft = m.draft.slice(0, -1); e.preventDefault(); return true; }
+    if (e.key === 'Enter') { saveName(); e.preventDefault(); return true; }
+    if (e.key.length === 1 && e.key !== ' ' && !e.metaKey && !e.ctrlKey) { type(e.key.toUpperCase()); e.preventDefault(); return true; }
+    return false;
+  }
+  function draw(buf, now) {
+    G.on(buf);
+    G.rect(5, 4, 118, 112, 0); G.box(6, 5, 116, 109); G.rect(8, 114, 114, 1, 1);
+    const title = m.screen === 'main' ? 'SETTINGS' : m.screen === 'name' ? 'NAME' : 'CONTROLS';
+    G.text(12, 11, title, 1); for (let x = 12; x < 116; x += 2) G.px(x, 19, 1);
+    const foot = (t) => G.text(12, 104, t, 1);
+    if (m.screen === 'main') {
+      const value = { NAME: myName || '-', HAIR: st.p.hair ? 'DARK' : 'LIGHT', SHIRT: st.p.shirt ? 'DARK' : 'LIGHT' };
+      ROWS.forEach((row, k) => {
+        const y = 26 + k * 12, on = k === m.row;
+        if (on) G.rect(10, y - 2, 108, 9, 1);
+        G.text(14, y, row, on ? 0 : 1);
+        if (value[row]) G.text(114 - G.textW(value[row]), y, value[row], on ? 0 : 1);
+      });
+      foot('A CHOOSE   B BACK');
+    } else if (m.screen === 'controls') {
+      HELP.forEach(([k, what], i) => { G.text(12, 26 + i * 11, k, 1); G.text(48, 26 + i * 11, what, 1); });
+      foot('A BACK');
+    } else {
+      G.box(12, 23, 104, 11); G.text(16, 26, m.draft, 1);
+      if (m.draft.length < 8 && ((now / 400) | 0) % 2) G.rect(16 + m.draft.length * 4, 31, 3, 1, 1);   /* where the next letter goes */
+      GRID.forEach((row, r) => row.forEach((cell, c) => {
+        const x = 11 + cell.col * 12, y = 40 + r * 12, w = cell.w * 12 - 1, on = r === m.r && c === m.c;
+        if (on) G.rect(x, y, w, 10, 1);
+        G.text(x + ((w - G.textW(cell.label)) >> 1), y + 3, cell.label, on ? 0 : 1);
+      }));
+      foot(touch ? 'A PICK   B RUB OUT' : 'TYPE - OR A PICK  B RUB OUT');
+    }
+  }
+  return { get open() { return m.open; }, toggle() { m.open = !m.open; m.screen = 'main'; m.row = 0; }, input, key, draw };
+})();
 
 function draw() {
   const d = new Date();
   S.render(st, fb, d.getUTCHours() * 60 + d.getUTCMinutes());
-  if (!started) S.notice(fb, ['PRESS A BUTTON', 'TO START THE SOUND']);
+  if (menu.open) menu.draw(fb, performance.now());
+  else if (!started) S.notice(fb, ['PRESS A BUTTON', 'TO START THE SOUND']);
   for (let i = 0; i < fb.length; i++) {
     const on = fb[i], o = i * 4;
     img.data[o] = on ? 0x1c : 0xc9; img.data[o + 1] = on ? 0x1c : 0xcd; img.data[o + 2] = on ? 0x1a : 0xbf; img.data[o + 3] = 255;
@@ -1358,7 +1798,10 @@ function tick(now) {
   /* the tab says where you are listening */
   const title = st.inside >= 0 ? S.STATIONS[st.inside].name + ' on radiotown' : 'radiotown';
   if (document.title !== title) document.title = title;
-  if (S.advance(st, now, keys, action)) { action = false; sound(); draw(); }
+  /* with the menu open the town goes on, but the buttons work the menu and you stand still */
+  const paused = menu.open;
+  if (paused) menu.input(now);
+  if (S.advance(st, now, paused ? IDLE : keys, !paused && action)) { if (!paused) action = false; if (net) { net.send(st, now); net.apply(st, now); } sound(); draw(); }
   requestAnimationFrame(tick);
 }
 setMode('2d');
