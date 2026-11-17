@@ -35,13 +35,22 @@
     font-size: 9px; letter-spacing: 1px; color: var(--print); pointer-events: none; }
 
   .deck { display: grid; grid-template-columns: 132px 1fr 132px; align-items: center; margin-top: 22px; }
-  .dpad { position: relative; width: 132px; height: 132px; perspective: 380px; cursor: pointer; }
+  .dpad { position: relative; width: 132px; height: 132px; cursor: pointer; }
   .dpad svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-  .dpad .base { filter: drop-shadow(0 5px 5px #00000059); }
-  .dpad .cap { transform-origin: 50% 50%; }
   .dpad .arrow { fill: var(--legend); opacity: .35; }
   .dpad .arrow.on { opacity: 1; }
   .dpad.one .v { visibility: hidden; }
+
+  /* the screen with the volume slider in the case beside it */
+  .top { display: grid; grid-template-columns: 1fr 22px; gap: 12px; align-items: stretch; }
+  .vol { position: relative; cursor: ns-resize; touch-action: none; }
+  .vol .slot { position: absolute; left: 7px; right: 7px; top: 26px; bottom: 26px; border-radius: 4px; background: #0d0d0c;
+    box-shadow: 0 2px 3px #000000a6 inset, 0 1px 0 #ffffff1f; }
+  .vol .knob { position: absolute; left: 0; right: 0; height: 26px; margin-top: -13px; border-radius: 4px; border: 1px solid var(--key-edge);
+    background: repeating-linear-gradient(0deg, #4a4a44 0 2px, #2a2a27 2px 4px);
+    box-shadow: 0 1px 0 #ffffff40 inset, 0 3px 0 #0000008c, 0 5px 6px #00000059; }
+  .vol .mark { position: absolute; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--print); pointer-events: none; }
+  .vol .mark.hi { top: 4px; } .vol .mark.lo { bottom: 4px; }
 
   .ab { position: relative; width: 132px; height: 104px; }
   .btn { position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 1px solid var(--key-edge);
@@ -78,10 +87,10 @@
     color: inherit; cursor: pointer; }
   dialog button.go { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-  p { color: var(--dim); margin: 14px 4px 0; text-align: center; }
-  kbd { color: var(--ink); }
+  dialog ul { list-style: none; margin: 0 0 16px; padding: 0; color: var(--dim); }
+  dialog li { display: flex; justify-content: space-between; gap: 12px; }
+  dialog li b { color: var(--ink); font-weight: 400; }
   @media (pointer: coarse) {
-    #help { display: none; }
     body { padding-top: 26px; }
     .case { padding: 34px 22px 46px; }   /* room above the screen and below the controls for a hand */
     .deck { margin-top: 34px; }
@@ -93,31 +102,39 @@
   <div class="case">
     <button class="slide" id="mode" role="switch" aria-checked="false" aria-label="2D town"></button>
     <div class="slide-print"><span>1D</span><span>2D</span></div>
-    <div class="bezel"><canvas id="lcd" width="128" height="128"></canvas></div>
+    <div class="top">
+      <div class="bezel"><canvas id="lcd" width="128" height="128"></canvas></div>
+      <div class="vol" id="vol" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100">
+        <span class="mark hi">+</span><div class="slot"></div><div class="knob" id="knob"></div><span class="mark lo">−</span>
+      </div>
+    </div>
     <div class="deck">
       <div class="dpad" id="dpad">
-        <svg class="base" viewBox="0 0 132 132" aria-hidden="true">
-          <g fill="#0a0a09" transform="translate(0 5)">
-            <rect x="2" y="44" width="128" height="44" rx="9"/><rect x="44" y="2" width="44" height="128" rx="9"/>
-          </g>
-        </svg>
-        <svg class="cap" id="cap" viewBox="0 0 132 132" aria-hidden="true">
+        <svg viewBox="0 0 132 132" aria-hidden="true">
           <defs>
             <linearGradient id="face" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="132">
-              <stop offset="0" stop-color="#3f3f3a"/><stop offset="1" stop-color="#262623"/>
+              <stop offset="0" stop-color="#40403b"/><stop offset="1" stop-color="#282825"/>
+            </linearGradient>
+            <linearGradient id="lean" gradientUnits="userSpaceOnUse" x1="0" y1="66" x2="132" y2="66">
+              <stop offset="0" stop-color="#fff" stop-opacity=".13"/><stop offset=".5" stop-color="#000" stop-opacity="0"/>
+              <stop offset="1" stop-color="#000" stop-opacity=".3"/>
             </linearGradient>
             <radialGradient id="dimple" cx=".5" cy=".3" r=".7">
               <stop offset="0" stop-color="#1c1c1a"/><stop offset="1" stop-color="#34342f"/>
             </radialGradient>
+            <filter id="soft" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur stdDeviation="3"/></filter>
           </defs>
-          <g fill="#0f0f0e"><rect x="2" y="44" width="128" height="44" rx="9"/><rect x="44" y="2" width="44" height="128" rx="9"/></g>
-          <g fill="#5c5c54"><rect x="3" y="45" width="126" height="42" rx="8"/><rect x="45" y="3" width="42" height="126" rx="8"/></g>
-          <g fill="url(#face)"><rect x="3" y="46.2" width="126" height="40.8" rx="8"/><rect x="45" y="4.2" width="42" height="124.8" rx="8"/></g>
-          <circle cx="66" cy="66" r="9" fill="url(#dimple)"/>
-          <path class="arrow v" data-k="up" d="M66 12l7 9h-14z"/>
-          <path class="arrow v" data-k="down" d="M66 120l7-9h-14z"/>
-          <path class="arrow" data-k="left" d="M12 66l9-7v14z"/>
-          <path class="arrow" data-k="right" d="M120 66l-9-7v14z"/>
+          <path id="pad-shadow" fill="#000" opacity=".4" filter="url(#soft)"/>
+          <path id="pad-well" fill="#090908"/>
+          <path id="pad-wall" fill="#121211"/>
+          <path id="pad-rim" fill="#5c5c54"/>
+          <path id="pad-face" fill="url(#face)"/>
+          <path id="pad-lean" fill="url(#lean)" opacity="0"/>
+          <circle id="pad-dimple" cx="66" cy="66" r="9" fill="url(#dimple)"/>
+          <path class="arrow v" data-k="up" data-at="66,16" d="M66 12l7 9h-14z"/>
+          <path class="arrow v" data-k="down" data-at="66,116" d="M66 120l7-9h-14z"/>
+          <path class="arrow" data-k="left" data-at="16,66" d="M12 66l9-7v14z"/>
+          <path class="arrow" data-k="right" data-at="116,66" d="M120 66l-9-7v14z"/>
         </svg>
       </div>
       <div class="small">
@@ -134,7 +151,6 @@
       </div>
     </div>
   </div>
-  <p id="help"><kbd>arrows</kbd> walk · <kbd>space</kbd> A: in and out · <kbd>shift</kbd> B: sprint · <kbd>1</kbd> <kbd>2</kbd> street and town</p>
 </main>
 
 <dialog id="settings">
@@ -143,12 +159,15 @@
     <label for="name">Name</label>
     <input id="name" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
     <small>Shows above your head. Up to 8 letters or digits.</small>
-    <div id="volrow">
-      <label for="vol">Volume</label>
-      <input id="vol" type="range" min="0" max="100" step="1">
-      <small>How loud the radio is.</small>
-    </div>
-    <small id="volnote" hidden>Volume: use your phone's volume buttons. The speaker button mutes.</small>
+    <label>Controls</label>
+    <ul>
+      <li><span>Walk</span><b>cross · arrow keys</b></li>
+      <li><span>Go in, go out</span><b>A · space</b></li>
+      <li><span>Sprint</span><b>hold B · shift</b></li>
+      <li><span>Street or town</span><b>top switch · 1, 2</b></li>
+      <li><span>Mute</span><b>speaker · M</b></li>
+      <li><span>Volume</span><b>slider by the screen</b></li>
+    </ul>
     <div class="row"><button value="cancel">Cancel</button><button class="go" value="save">Save</button></div>
   </form>
 </dialog>
@@ -782,7 +801,7 @@ const img = ctx.createImageData(S.W, S.H);
 const fb = new Uint8Array(S.W * S.H);
 const keys = { left: false, right: false, up: false, down: false, run: false };
 const DIRS = ['up', 'down', 'left', 'right'];
-const dpad = $('dpad'), cap = $('cap'), btnA = $('a'), btnB = $('b'), mode = $('mode');
+const dpad = $('dpad'), btnA = $('a'), btnB = $('b'), mode = $('mode');
 const store = {
   get(k, d) { try { const v = localStorage.getItem('street.' + k); return v === null ? d : v; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('street.' + k, v); } catch (e) { /* private window: fine for this visit */ } },
@@ -817,12 +836,61 @@ function hold(el, down, up) {
   for (const ev of ['pointerup', 'pointercancel']) el.addEventListener(ev, () => { el.classList.remove('on'); up(); });
 }
 
-/* the cross tilts towards the pressed side, and its arrows light */
+/* The cross is one rigid cap rocking on a pivot under its middle, drawn the way the round buttons
+ * are: seen from above and a little in front, so height shows as a shift up the screen. Every
+ * point of the cap has a height; the pressed arm sinks towards the case and the opposite arm
+ * rises by as much. The top face is the outline with each point moved up by its height, the
+ * side wall joins that to the outline at case level, and the face darkens towards the low side. */
+const PAD = (() => {
+  const A = 22, L = 64, R = 9, C = 66, REST = 5, THROW = 4;
+  /* the outline, clockwise from the top arm's left corner; the 8 arm-end corners are rounded */
+  const corners = [[-A, -L, 1], [A, -L, 1], [A, -A, 0], [L, -A, 1], [L, A, 1], [A, A, 0], [A, L, 1], [-A, L, 1], [-A, A, 0], [-L, A, 1], [-L, -A, 1], [-A, -A, 0]];
+  const pts = [];
+  corners.forEach(([x, y, round], k) => {
+    const p = corners[(k + 11) % 12], n = corners[(k + 1) % 12];
+    const d1 = [Math.sign(x - p[0]), Math.sign(y - p[1])], d2 = [Math.sign(n[0] - x), Math.sign(n[1] - y)];
+    if (!round) { pts.push([C + x, C + y]); return; }
+    const mx = x - d1[0] * R + d2[0] * R, my = y - d1[1] * R + d2[1] * R;
+    for (let s = 0; s <= 5; s++) {
+      const t = s / 5 * Math.PI / 2;
+      pts.push([C + mx + R * (d1[0] * Math.sin(t) - d2[0] * Math.cos(t)), C + my + R * (d1[1] * Math.sin(t) - d2[1] * Math.cos(t))]);
+    }
+  });
+  const el = (id) => document.getElementById(id);
+  const d = (list) => 'M' + list.map(([x, y]) => x.toFixed(2) + ' ' + y.toFixed(2)).join('L') + 'Z';
+  function draw(tx, ty) {
+    /* height above the case at a point of the cap; tx, ty are -1, 0 or 1 */
+    const n = Math.hypot(tx, ty) || 1;
+    const high = (x, y) => Math.max(0.6, REST - THROW * (tx * (x - C) + ty * (y - C)) / (L * n));
+    const foot = pts.map(([x, y]) => [x, y + REST]);                 /* where the wall meets the case */
+    const top = pts.map(([x, y]) => [x, y + REST - high(x, y)]);
+    let wall = '';
+    for (let k = 0; k < pts.length; k++) { const m = (k + 1) % pts.length; wall += d([foot[k], foot[m], top[m], top[k]]); }
+    el('pad-wall').setAttribute('d', wall + d(foot));
+    el('pad-rim').setAttribute('d', d(top));
+    el('pad-face').setAttribute('d', d(top.map(([x, y]) => [x, y + 1.2])));   /* leaves the rim's light line along the upper edges */
+    el('pad-lean').setAttribute('d', d(top));
+    el('pad-lean').setAttribute('opacity', tx || ty ? 1 : 0);
+    const g = el('lean');   /* light on the raised side, dark on the sunk side */
+    g.setAttribute('x1', C - 66 * tx / n); g.setAttribute('y1', C - 66 * ty / n);
+    g.setAttribute('x2', C + 66 * tx / n); g.setAttribute('y2', C + 66 * ty / n);
+    el('pad-dimple').setAttribute('cy', C + REST - high(C, C));
+    for (const a of dpad.querySelectorAll('.arrow')) {
+      const [x, y] = a.dataset.at.split(',').map(Number);
+      a.setAttribute('transform', 'translate(0 ' + (REST - high(x, y)).toFixed(2) + ')');
+    }
+  }
+  /* the hole in the case, a little bigger than the cap, and the soft shadow under it */
+  const wide = pts.map(([x, y]) => [C + (x - C) * 1.035, C + (y - C) * 1.035 + REST + 1]);
+  el('pad-well').setAttribute('d', d(wide));
+  el('pad-shadow').setAttribute('d', d(pts.map(([x, y]) => [x, y + REST + 5])));
+  return { draw };
+})();
 function show() {
-  const x = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), y = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
-  cap.style.transform = x || y ? 'rotateX(' + (-y * 13) + 'deg) rotateY(' + (x * 13) + 'deg) translateZ(-3px)' : '';
-  for (const el of cap.querySelectorAll('.arrow')) el.classList.toggle('on', keys[el.dataset.k]);
+  PAD.draw((keys.right ? 1 : 0) - (keys.left ? 1 : 0), (keys.down ? 1 : 0) - (keys.up ? 1 : 0));
+  for (const el of dpad.querySelectorAll('.arrow')) el.classList.toggle('on', keys[el.dataset.k]);
 }
+show();
 function thumb(e) {
   const r = dpad.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
   const far = Math.hypot(x, y) > 12, a = Math.atan2(y, x) * 180 / Math.PI;
@@ -923,15 +991,32 @@ function setMuted(m) { muted = m; $('mute').setAttribute('aria-pressed', m); sto
 tap($('mute'), () => setMuted(!muted));
 setMuted(muted);
 
-/* ---- settings: your name and the volume, kept in this browser ---- */
-$('volrow').hidden = !(canVolume || useGraph); $('volnote').hidden = canVolume || useGraph;
-tap($('cog'), () => { $('name').value = myName; $('vol').value = Math.round(master * 100); $('settings').showModal(); });
-$('vol').addEventListener('input', () => { master = $('vol').value / 100; });
+/* ---- settings: your name, kept in this browser, and the list of controls ---- */
+tap($('cog'), () => { $('name').value = myName; $('settings').showModal(); });
+
+/* the volume slider: a knob in a slot beside the screen, up is louder */
+const vol = $('vol');
+function setVolume(v, save) {
+  master = Math.max(0, Math.min(1, v));
+  const r = vol.getBoundingClientRect(), pad = 26 + 13;
+  $('knob').style.top = (pad + (1 - master) * Math.max(0, r.height - 2 * pad)) + 'px';
+  vol.setAttribute('aria-valuenow', Math.round(master * 100));
+  if (save) store.set('volume', String(Math.round(master * 100)));
+}
+function slide(e) {
+  const r = vol.getBoundingClientRect(), pad = 26 + 13;
+  setVolume(1 - (e.clientY - r.top - pad) / Math.max(1, r.height - 2 * pad), false);
+}
+vol.addEventListener('pointerdown', (e) => { vol.setPointerCapture(e.pointerId); slide(e); });
+vol.addEventListener('pointermove', (e) => { if (vol.hasPointerCapture(e.pointerId)) slide(e); });
+vol.addEventListener('pointerup', () => setVolume(master, true));
+addEventListener('resize', () => setVolume(master, false));
+requestAnimationFrame(() => setVolume(master, false));
 $('settings').addEventListener('close', () => {
-  if ($('settings').returnValue !== 'save') { master = +store.get('volume', '80') / 100; return; }
+  if ($('settings').returnValue !== 'save') return;
   myName = $('name').value.toUpperCase().split('').filter((c) => c !== ' ' && S.FONT[c]).join('').slice(0, 8);
   st.p.name = myName;
-  store.set('name', myName); store.set('volume', String(Math.round(master * 100)));
+  store.set('name', myName);
 });
 
 function draw() {
