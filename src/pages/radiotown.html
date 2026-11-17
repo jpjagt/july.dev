@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>radiotown</title>
-<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAgElEQVR4nO3WQQqAIBCFYc8R3v8arVt0pqRFLQbEN4j6xzTwNmLDxxhlSn+Zynm77sQFWIhNHAAWthyAhS0HqDAuoDbCUeEAnoXj3KfmhWABtdGpjVv7uQD1wTgAL7D7JcQB1CNQP0B8QKth7+i/AxgdDmD57xgDcF+hxHL3mw0o6aWZTHUSBwYAAAAASUVORK5CYII=">
-<link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20shape-rendering%3D%22crispEdges%22%3E%3Cstyle%3E.d%7Bfill%3A%231c1c1a%7D.l%7Bfill%3A%23c9cdbf%7D%40media%20(prefers-color-scheme%3Adark)%7B.d%7Bfill%3A%23c9cdbf%7D.l%7Bfill%3A%231c1c1a%7D%7D%3C%2Fstyle%3E%3Cpath%20class%3D%22d%22%20d%3D%22M2%201h1v1h-1zM3%202h3v1h-3zM6%203h3v1h-3zM9%204h3v1h-3zM12%205h2v1h-2zM1%206h14v1h-14zM0%207h1v1h-1zM15%207h1v1h-1zM0%208h1v1h-1zM3%208h3v1h-3zM10%208h2v1h-2zM15%208h1v1h-1zM0%209h1v1h-1zM2%209h1v1h-1zM6%209h1v1h-1zM10%209h2v1h-2zM15%209h1v1h-1zM0%2010h1v1h-1zM2%2010h1v1h-1zM4%2010h1v1h-1zM6%2010h1v1h-1zM15%2010h1v1h-1zM0%2011h1v1h-1zM2%2011h1v1h-1zM6%2011h1v1h-1zM9%2011h5v1h-5zM15%2011h1v1h-1zM0%2012h1v1h-1zM3%2012h3v1h-3zM15%2012h1v1h-1zM0%2013h1v1h-1zM15%2013h1v1h-1zM1%2014h14v1h-14zM2%2015h2v1h-2zM12%2015h2v1h-2z%22%2F%3E%3Cpath%20class%3D%22l%22%20d%3D%22M1%207h14v1h-14zM1%208h2v1h-2zM6%208h4v1h-4zM12%208h3v1h-3zM1%209h1v1h-1zM3%209h3v1h-3zM7%209h3v1h-3zM12%209h3v1h-3zM1%2010h1v1h-1zM3%2010h1v1h-1zM5%2010h1v1h-1zM7%2010h8v1h-8zM1%2011h1v1h-1zM3%2011h3v1h-3zM7%2011h2v1h-2zM14%2011h1v1h-1zM1%2012h2v1h-2zM6%2012h9v1h-9zM1%2013h14v1h-14z%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAdklEQVR4nO3TMQrAIAxGYc9RvP81nDv0Tt3ERTBg0ub3wZtEwjck5X5ar9arN75HVgClBs1wkVBAOqCvoID0Qd5QQLlBs6HeAdIE7Vr2lSMApA+yLqZ1JqCzQLuOANC5oJWltv4BpA/yCJA+KDJAOqA/BCgd6AXmVvTTKAhs8wAAAABJRU5ErkJggg==">
 <style>
   :root { --bg: #e9e6df; --ink: #1c1c1a; --case: #d8d3c6; --case-lo: #c4bfb1; --lcd: #c9cdbf; --dim: #77736a;
     --key: #3a3a36; --key-lo: #262623; --key-edge: #0f0f0e; --legend: #c9cdbf; --print: #8a8578; }
@@ -20,7 +19,7 @@
     font: 14px/1.5 ui-monospace, Menlo, monospace; padding: 22px 16px 16px; }
   main { width: min(100%, 420px); }
   .case { position: relative; background: linear-gradient(var(--case), var(--case-lo)); border-radius: 28px 28px 44px 28px;
-    padding: 24px 22px 52px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d; }
+    padding: 24px 22px 66px; box-shadow: 0 1px 0 #ffffff40 inset, 0 -2px 0 #00000026 inset, 0 14px 30px #0000004d; }
   .bezel { padding: 10px; border-radius: 10px; background: #1b1b19; box-shadow: 0 1px 0 #ffffff26, 0 2px 5px #00000080 inset; }
   canvas { display: block; width: 100%; aspect-ratio: 1; image-rendering: pixelated; background: var(--lcd); border-radius: 3px; }
 
@@ -43,28 +42,37 @@
   .dpad .arrow.on { opacity: 1; }
   .dpad.one .v { visibility: hidden; }
 
-  /* the screen with the volume slider in the case beside it */
-  .top { display: grid; grid-template-columns: 1fr 22px; gap: 12px; align-items: stretch; }
-  .vol { position: relative; cursor: ns-resize; touch-action: none; }
-  .vol .slot { position: absolute; left: 7px; right: 7px; top: 26px; bottom: 26px; border-radius: 4px; background: #0d0d0c;
-    box-shadow: 0 2px 3px #000000a6 inset, 0 1px 0 #ffffff1f; }
-  .vol .knob { position: absolute; left: 0; right: 0; height: 26px; margin-top: -13px; border-radius: 4px; border: 1px solid var(--key-edge);
+  /* the volume slider, set into the right edge like the switch in the top one: ten detents */
+  .vol { position: absolute; right: -7px; top: 96px; width: 14px; height: 132px; border-radius: 0 4px 4px 0; background: #0d0d0c;
+    box-shadow: 2px 0 3px #000000a6 inset, 0 1px 0 #ffffff1f; cursor: ns-resize; touch-action: none; }
+  .vol::before { content: ""; position: absolute; inset: -10px -16px -10px -24px; }   /* a bigger target for a thumb */
+  .vol .knob { position: absolute; left: 3px; width: 15px; height: 24px; border-radius: 1px 3px 3px 1px; border: 1px solid var(--key-edge);
     background: repeating-linear-gradient(0deg, #4a4a44 0 2px, #2a2a27 2px 4px);
-    box-shadow: 0 1px 0 #ffffff40 inset, 0 3px 0 #0000008c, 0 5px 6px #00000059; }
-  .vol .mark { position: absolute; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--print); pointer-events: none; }
-  .vol .mark.hi { top: 4px; } .vol .mark.lo { bottom: 4px; }
+    box-shadow: 0 1px 0 #ffffff40 inset, 2px 2px 3px #00000080; transition: top .05s ease-out; }
+  .vol-print { position: absolute; right: 11px; top: 96px; width: 7px; height: 132px; pointer-events: none; }
+  .vol-print i { position: absolute; right: 0; height: 1px; background: var(--print); }
 
-  .ab { position: relative; width: 132px; height: 104px; }
+  /* the controls, beside the device where there is room; they fade once you set off */
+  main { position: relative; }
+  .hint { display: none; }
+  @media (min-width: 900px) and (pointer: fine) {
+    .hint { display: block; position: absolute; left: calc(100% + 40px); top: 50%; transform: translateY(-50%); width: 210px;
+      font-size: 12px; line-height: 1.9; color: var(--dim); transition: opacity 1.5s; }
+    .hint b { color: var(--ink); font-weight: 700; margin-right: .7em; }
+    .hint.gone { opacity: 0; }
+  }
+
+  .ab { position: relative; width: 138px; height: 112px; margin-right: 6px; }
   .btn { position: absolute; width: 58px; height: 58px; border-radius: 50%; border: 1px solid var(--key-edge);
     color: var(--legend); padding: 0; display: grid; place-items: center; cursor: pointer;
     font: 700 22px/1 ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
     background: radial-gradient(circle at 50% 30%, #47473f, var(--key-lo) 70%);
     box-shadow: 0 1px 0 #ffffff33 inset, 0 -3px 0 #00000059 inset, 0 3px 0 #0000008c, 0 6px 9px #00000040; }
   .btn.on { transform: translateY(2px); box-shadow: 0 1px 0 #ffffff1a inset, 0 -1px 0 #00000059 inset, 0 1px 0 #0000008c; }
-  #a { right: 0; top: 6px; }
-  #b { left: 20px; top: 38px; }
+  #a { right: 0; top: 2px; }
+  #b { left: 4px; top: 48px; }
 
-  .small { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 14px; }   /* mute and settings, side by side at the foot of the case */
+  .small { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 8px; }   /* mute and settings, side by side at the foot of the case */
   .cog { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--key-edge);
     color: var(--legend); padding: 0; display: grid; place-items: center; cursor: pointer;
     background: radial-gradient(circle at 50% 30%, #47473f, var(--key-lo) 70%);
@@ -94,7 +102,7 @@
   dialog li b { color: var(--ink); font-weight: 400; }
   @media (pointer: coarse) {
     body { padding-top: 26px; }
-    .case { padding: 34px 22px 60px; }   /* room above the screen and below the controls for a hand */
+    .case { padding: 34px 22px 74px; }   /* room above the screen and below the controls for a hand */
     .deck { margin-top: 34px; }
   }
 </style>
@@ -104,12 +112,9 @@
   <div class="case">
     <button class="slide" id="mode" role="switch" aria-checked="false" aria-label="2D town"></button>
     <div class="slide-print"><span>1D</span><span>2D</span></div>
-    <div class="top">
-      <div class="bezel"><canvas id="lcd" width="128" height="128"></canvas></div>
-      <div class="vol" id="vol" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100">
-        <span class="mark hi">+</span><div class="slot"></div><div class="knob" id="knob"></div><span class="mark lo">−</span>
-      </div>
-    </div>
+    <div class="bezel"><canvas id="lcd" width="128" height="128"></canvas></div>
+    <div class="vol-print" id="volprint" aria-hidden="true"></div>
+    <div class="vol" id="vol" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="10"><div class="knob" id="knob"></div></div>
     <div class="deck">
       <div class="dpad" id="dpad">
         <svg viewBox="0 0 132 132" aria-hidden="true">
@@ -153,6 +158,13 @@
       </button>
     </div>
   </div>
+  <aside class="hint" id="hint">
+    <div><b>arrows</b>move</div>
+    <div><b>space</b>go in, go out, sit</div>
+    <div><b>shift</b>sprint</div>
+    <div><b>M</b>mute</div>
+    <div><b>1 2</b>street, town</div>
+  </aside>
 </main>
 
 <dialog id="settings">
@@ -165,10 +177,11 @@
     <ul>
       <li><span>Walk</span><b>cross · arrow keys</b></li>
       <li><span>Go in, go out</span><b>A · space</b></li>
+      <li><span>Sit, stand up</span><b>A at a seat</b></li>
       <li><span>Sprint</span><b>hold B · shift</b></li>
       <li><span>Street or town</span><b>top switch · 1, 2</b></li>
       <li><span>Mute</span><b>speaker · M</b></li>
-      <li><span>Volume</span><b>slider by the screen</b></li>
+      <li><span>Volume</span><b>slider on the right edge</b></li>
     </ul>
     <div class="row"><button value="cancel">Cancel</button><button class="go" value="save">Save</button></div>
   </form>
@@ -185,7 +198,13 @@
   const W = 128, H = 128, T = 16, HUD_H = 9, VIEW_H = H - HUD_H;
   const STEP_MS = 1000 / 27, SPEED = 2, SPRINT = 3, BOT_SPEED = 1; /* 54 px/s walking, 81 sprinting */
   const ROOM = { minX: 2, maxX: 114, minY: 30, maxY: 100, startX: 58, startY: 98 };
-  const SEATS = [[30, 66], [92, 66], [24, 92], [98, 92]];
+  /* where a sitter's sprite goes: two places on the sofa, then four cushions round the rug */
+  const SEATS = [[10, 44], [24, 44], [16, 70], [100, 70], [12, 94], [104, 94]];
+  const SOFA_SEATS = 2;
+  const RUG = { x: 36, y: 62, w: 56, h: 36 };
+  /* the lamps (x, y, reach): the floor lamp by the sofa, the one on the booth, the one on the side table */
+  const LAMPS = [[47, 38, 58], [86, 18, 52], [115, 46, 50], [64, 122, 34]];   /* the last: daylight in at the door */
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 
   /* name, city, minutes from UTC, stream. The town hands out its houses in this order. */
   const STATIONS = [
@@ -258,6 +277,8 @@
     if (rows.length !== 16) throw new Error('sprite height');
     return rows;
   }
+  const SIT = HEAD_TOP.concat(HEAD.d, ['..#xxxxxx#..', '.#o#xxxx#o#.', '.##xxxxxx##.', '.#oo####oo#.', '.####..####.']);
+  SIT.forEach((r) => { if (r.length !== 12) throw new Error('sit row "' + r + '"'); });
   const CHAR = {
     d: LEGS.front.map((l) => build(HEAD.d, BODY_FRONT, l)),
     u: LEGS.front.map((l) => build(HEAD.u, BODY_FRONT, l)),
@@ -461,10 +482,13 @@
   const SOLID = { tree: [1, 1], lamp: [1, 1], bench: [1, 1], fountain: [2, 2], stall: [2, 1] };
 
   function person(c, t) {
-    const set = c.dir === 'l' ? CHAR.r : CHAR[c.dir];
+    const set = c.dir === 'l' ? CHAR.r : CHAR[c.dir || 'd'];
     const n = set.length, beat = (t / (c.run ? 90 : 160)) | 0;
     const f = c.moving ? (n === 2 ? beat % 2 : 1 + beat % 2) : 0;
-    sprite(c.x, c.y, set[f], c.dir === 'l', { h: c.hair ? '#' : 'o', x: c.shirt ? '#' : 'o' });
+    const rows = c.sit ? SIT : set[f], flip = !c.sit && c.dir === 'l';
+    const map = { h: c.hair ? '#' : 'o', x: c.shirt ? '#' : 'o' };
+    if (c.bob) { sprite(c.x, c.y + 8, rows.slice(8), flip, map); sprite(c.x, c.y + 1, rows.slice(0, 8), flip, map); }
+    else sprite(c.x, c.y, rows, flip, map);
   }
   function tag(c) {
     if (!c.name) return;
@@ -583,7 +607,7 @@
 
   function create(mode, seed) {
     const world = mode === '1d' ? makeStreet() : makeTown();
-    const st = { mode, world, seed: seed || 7, inside: -1, woke: false, t: 0, acc: 0, last: null,
+    const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, idle: 0, pulse: 0, woke: false, t: 0, acc: 0, last: null,
       p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, hair: 1, shirt: 1, name: '' }, bots: [] };
     if (mode === '1d') { st.p.x = 28; st.p.y = doorSpot(world.houses[0]).y; }
     else st.p.x += 8; /* the middle of the avenue, NTS 1 and 2 either side, the fountain below */
@@ -606,9 +630,9 @@
     const p = st.p;
     for (const hs of st.world.houses) {
       const x = hs.tx * T, y = hs.ty * T;
-      if (hs.face === 's' ? p.x + 6 >= x + 17 && p.x + 6 <= x + 30 && p.y >= y + 36 && p.y <= y + 50
-        : hs.face === 'e' ? p.x >= x + 44 && p.x <= x + 54 && p.y >= y + 24 && p.y <= y + 36
-        : p.x >= x - 18 && p.x <= x - 8 && p.y >= y + 24 && p.y <= y + 36) return hs;
+      if (hs.face === 's' ? p.x + 6 >= x + 13 && p.x + 6 <= x + 34 && p.y >= y + 36 && p.y <= y + 66
+        : hs.face === 'e' ? p.x >= x + 44 && p.x <= x + 70 && p.y >= y + 22 && p.y <= y + 38
+        : p.x >= x - 34 && p.x <= x - 8 && p.y >= y + 22 && p.y <= y + 38) return hs;
     }
     return null;
   }
@@ -631,6 +655,21 @@
     else { b.tx = b.path[0][0]; b.ty = b.path[0][1]; b.path.shift(); }
   }
 
+  /* the sofa is furniture: feet cannot go where it stands */
+  function onSofa(x, y) { return x + 9 > 4 && x + 2 < 42 && y + 15 < 62; }
+  /* who sits where: the listeners in this house take the seats in order, skipping yours */
+  function sitters(st) {
+    const out = [];
+    let k = 0;
+    for (const b of st.bots) {
+      if (b.state !== 'in' || b.house !== st.inside) continue;
+      while (k === st.seat) k++;
+      if (k >= SEATS.length) break;
+      out.push([k++, b]);
+    }
+    return out;
+  }
+
   /* one step (STEP_MS). keys: {left,right,up,down,run}; action: an edge (the A button) */
   function step(st, keys, action) {
     const p = st.p, two = st.mode === '2d';
@@ -644,13 +683,30 @@
     st.t += STEP_MS;
     if (st.inside >= 0) {
       p.run = false; /* no sprinting indoors */
-      p.x = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * SPEED));
-      p.y = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * SPEED));
-      const out = action || (two && keys.down && p.y >= ROOM.maxY && p.x + 6 >= 50 && p.x + 6 <= 78);
-      if (out) {
-        /* inside is a station, and the town's houses are not in station order */
-        const d = doorSpot(st.world.houses.find((hs) => hs.i === st.inside));
-        st.inside = -1; p.x = d.x; p.y = d.y; p.dir = d.dir;
+      st.idle = p.moving ? 0 : st.idle + 1;
+      if (st.seat >= 0) {
+        /* seated: the cross does nothing, A stands you up beside the seat */
+        p.moving = false; p.dir = 'd';
+        if (action) { const seat = SEATS[st.seat]; st.seat = -1; p.x = seat[0]; p.y = Math.min(ROOM.maxY, seat[1] + 10); st.idle = 0; }
+      } else {
+        const nx = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * SPEED));
+        const ny = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * SPEED));
+        if (!onSofa(nx, p.y)) p.x = nx;
+        if (!onSofa(p.x, ny)) p.y = ny;
+        const taken = new Set(sitters(st).map(([k]) => k));
+        /* A sits you on the nearest free seat within reach */
+        let seat = -1, best = 1e9;
+        if (action) SEATS.forEach((q, k) => {
+          const dx = Math.abs(p.x - q[0]), dy = two ? Math.abs(p.y - q[1]) : 0;
+          if (!taken.has(k) && dx <= 10 && dy <= 18 && dx + dy < best) { best = dx + dy; seat = k; }
+        });
+        const byDoor = p.y >= 84 && Math.abs(p.x + 6 - 64) <= 20;
+        if (seat >= 0) { st.seat = seat; st.idle = 0; p.moving = false; }
+        else if ((action && (!two || byDoor)) || (two && keys.down && p.y >= ROOM.maxY && byDoor)) {
+          /* inside is a station, and the town's houses are not in station order */
+          const d = doorSpot(st.world.houses.find((hs) => hs.i === st.inside));
+          st.inside = -1; p.x = d.x; p.y = d.y; p.dir = d.dir;
+        }
       }
     } else {
       let hitX = false, hitY = false;
@@ -660,7 +716,7 @@
       }
       const hs = atDoor(st);
       const into = hs && two && (hs.face === 's' ? keys.up && hitY : hs.face === 'e' ? keys.left && hitX : keys.right && hitX);
-      if (hs && (action || into)) { st.inside = hs.i; p.x = ROOM.startX; p.y = ROOM.startY; p.dir = 'u'; }
+      if (hs && (action || into)) { st.inside = hs.i; st.seat = -1; st.idle = 0; p.x = ROOM.startX; p.y = ROOM.startY; p.dir = 'u'; }
     }
     for (const b of st.bots) stepBot(st, b);
   }
@@ -696,15 +752,15 @@
 
   function hud(st, utcMin) {
     for (let y = VIEW_H; y < H; y++) for (let x = 0; x < W; x++) fb[y * W + x] = 1;
-    let i = st.inside, pre = '';
+    let i = st.inside;
     if (i < 0) {
       const n = nearest(st);
       if (n.dist > 60) return;
-      i = n.house.i; if (atDoor(st)) pre = '> ';
+      i = n.house.i;
     }
     const s = STATIONS[i], n = st.bots.filter((b) => b.state === 'in' && b.house === i).length;
-    let line = pre + s.name + ' ' + s.city + ' ' + clock(s.off, utcMin);
-    if (textW(line) > W - 16) line = pre + s.name + ' ' + clock(s.off, utcMin);
+    let line = s.name + ' ' + s.city + ' ' + clock(s.off, utcMin);
+    if (textW(line) > W - 16) line = s.name + ' ' + clock(s.off, utcMin);
     const put = (x, str) => {
       for (let k = 0; k < str.length; k++) {
         const g = FONT[str[k]] || FONT[' '];
@@ -715,54 +771,128 @@
     if (n) { const c = '+' + n; put(W - 2 - textW(c), c); }
   }
 
+  /* rugs, after four weaving traditions; each is solid: nothing of the floor shows through */
+  const RUGS = [
+    /* a Persian medallion carpet: borders, a lozenge medallion, corner pieces, a sprinkled field */
+    (u, v, w, h) => {
+      const e = Math.min(u, v, w - 1 - u, h - 1 - v);
+      if (e === 2 || e === 5) return 1;
+      if (e === 3 || e === 4) return (u + v) % 3 === 0 ? 1 : 0;
+      const d = Math.abs(u - (w - 1) / 2) / (w * 0.3) + Math.abs(v - (h - 1) / 2) / (h * 0.36);
+      if ((d > 0.88 && d <= 1) || (d > 0.5 && d <= 0.6) || d < 0.2) return 1;
+      const c = Math.abs(Math.min(u, w - 1 - u) - 6) / (w * 0.18) + Math.abs(Math.min(v, h - 1 - v) - 6) / (h * 0.26);
+      if (c > 0.8 && c <= 1) return 1;
+      return d > 1.12 && c > 1.15 && (u * 7 + v * 13) % 23 === 0 ? 1 : 0;
+    },
+    /* an Anatolian kilim: bands of zigzag and a row of stepped lozenges, mirrored top to bottom */
+    (u, v, w, h) => {
+      const e = Math.min(u, v, w - 1 - u, h - 1 - v);
+      if (e === 1) return 1;
+      if (e < 3) return 0;
+      const vv = v - 3, n = h - 6, m = vv < n / 2 ? vv : n - 1 - vv;
+      if (m <= 4) return m === Math.abs((u % 8) - 4) ? 1 : 0;
+      if (m === 6) return 1;
+      if (m < 8) return 0;
+      const du = Math.abs((u % 14) - 7) / 7, dv = (n / 2 - 0.5 - m) / (n / 2 - 8), sum = du + dv;
+      return ((u / 14) | 0) % 2 === 0 ? (sum <= 1 ? 1 : 0) : (sum <= 1 && sum > 0.7 ? 1 : 0);
+    },
+    /* a Beni Ourain from the Atlas: a pale shaggy field under a loose lattice of dark lozenges */
+    (u, v, w, h) => {
+      if (Math.min(u, v, w - 1 - u, h - 1 - v) < 2) return 0;
+      const a = (u * 2 + v * 3) % 36, b = (((u * 2 - v * 3) % 36) + 36) % 36;
+      return a < 2 || b < 2 ? 1 : (u * 5 + v * 11) % 67 === 0 ? 1 : 0;
+    },
+    /* a Turkmen carpet: rows of quartered guls inside a striped border */
+    (u, v, w, h) => {
+      const e = Math.min(u, v, w - 1 - u, h - 1 - v);
+      if (e === 2 || e === 4) return 1;
+      if (e === 3) return (u + v) % 2;
+      if (e < 7) return 0;
+      const cw = (w - 14) / 3, ch = (h - 14) / 2;
+      const du = ((u - 7) % cw) - cw / 2, dv = ((v - 7) % ch) - ch / 2, ax = Math.abs(du), ay = Math.abs(dv);
+      const inside = ax <= cw / 2 - 2 && ay <= ch / 2 - 1.5 && ax / (cw / 2 - 1) + ay / (ch / 2 - 0.5) <= 1.25;
+      if (!inside) return 0;
+      const edge = ax > cw / 2 - 3 || ay > ch / 2 - 2.5 || ax / (cw / 2 - 1) + ay / (ch / 2 - 0.5) > 1.05;
+      return edge || ax < 0.6 || ay < 0.6 || (du > 0) !== (dv > 0) ? 1 : 0;
+    },
+  ];
+  function rug(kind) {
+    const { x, y, w, h } = RUG;
+    rect(x, y, w, h, 1); rect(x + 1, y + 1, w - 2, h - 2, 0);
+    for (let v = 1; v < h - 1; v++) for (let u = 1; u < w - 1; u++) if (RUGS[kind](u, v, w, h)) px(x + u, y + v, 1);
+    for (let v = 1; v < h; v += 2) { rect(x - 2, y + v, 2, 1, 1); rect(x + w, y + v, 2, 1, 1); }   /* the fringe */
+  }
+
+  /* lamplight: full light near a lamp, falling off to a dithered dusk on the wall and floor far from one */
+  function lamplight(grow) {
+    for (let y = 0; y < VIEW_H; y++) for (let x = 0; x < W; x++) {
+      if (fb[y * W + x]) continue;
+      let lit = 0.58;
+      for (const [lx, ly, r] of LAMPS) lit += Math.max(0, 1 - Math.hypot(x - lx, (y - ly) * 1.2) / (r + grow)) * 1.1;
+      if ((BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16 > lit) fb[y * W + x] = 1;
+    }
+  }
+
   function room(st, t) {
     cx = cy = 0;
-    const i = st.inside, name = STATIONS[i].name;
-    /* wall */
-    for (let y = 4; y < 28; y += 8) for (let x = 4 + (y % 16 ? 8 : 0); x < W; x += 16) px(x, y, 1);
+    const i = st.inside, name = STATIONS[i].name, kick = st.pulse > 0.45 ? 1 : 0;
+    /* wall: a picture rail and a skirting board */
+    for (let x = 0; x < W; x += 2) px(x, 4, 1);
     rect(0, 30, W, 2, 1);
-    /* floor: planks */
-    for (let y = 44, r = 0; y < VIEW_H; y += 12, r++) {
+    /* floor: boards */
+    for (let y = 42, r = 0; y < VIEW_H; y += 11, r++) {
       for (let x = 0; x < W; x += 2) px(x, y, 1);
-      for (let x = 10 + (r % 2) * 20; x < W; x += 40) rect(x, y + 1, 1, 11, 1);
+      for (let x = 12 + (r % 2) * 22; x < W; x += 44) rect(x, y + 1, 1, 10, 1);
     }
-    /* speakers */
+    /* the light falls on the bare room: what stands in it is drawn after, crisp */
+    lamplight(kick * 2);
+    /* speakers: the cones move with the kick */
     for (const x of [2, 110]) {
-      rect(x, 10, 16, 26, 1); ring(x + 8, 27, 5, 0); disc(x + 8, 27, 1, 0); ring(x + 8, 16, 2, 0);
+      rect(x, 8, 16, 28, 1); ring(x + 8, 27 + kick, 5, 0); disc(x + 8, 27 + kick, 1, 0); ring(x + 8, 15, 2, 0); px(x + 8, 15, 0);
     }
-    /* record shelves */
-    for (const y of [14, 25]) {
-      rect(21, y, 17, 1, 1);
-      for (let k = 0; k < 7; k++) rect(22 + k * 2 + (k > 4 ? 1 : 0), y - 7 + (k % 3 === 1 ? 1 : 0), 1, 7, 1);
+    /* record shelves: spines of uneven height, one record leaning */
+    for (const y of [16, 28]) {
+      rect(20, y, 19, 1, 1); px(20, y + 1, 1); px(38, y + 1, 1);
+      for (let k = 0; k < 6; k++) rect(22 + k * 2, y - 8 + ((k * 5 + y) % 3), 1, 8 - ((k * 5 + y) % 3), 1);
+      for (let k = 0; k < 6; k++) px(34 + (k >> 1), y - 1 - k, 1);
     }
-    box(92, 6, 14, 17); ring(99, 14, 4, 1); px(99, 14, 1);
-    /* name banner, dj, booth */
+    /* a poster */
+    box(92, 5, 15, 20); disc(99, 13, 4, 1); disc(99, 13, 1, 0); rect(95, 20, 9, 1, 1); rect(96, 22, 7, 1, 1);
+    /* the station's name, and the booth: two decks, a mixer, a lamp */
     const tw = textW(name) + 4;
-    box(64 - (tw >> 1), 1, tw, 9); text(66 - (tw >> 1), 3, name, 1);
-    sprite(58, 11, CHAR.d[0], false, { h: i % 2 ? '#' : 'o', x: '#' });
-    rect(40, 24, 48, 15, 1); rect(41, 25, 46, 8, 0);
-    for (const x of [51, 77]) { ring(x, 29, 3, 1); px(x, 29, 1); }
-    rect(61, 26, 6, 6, 1); px(63, 28, 0); px(65, 30, 0);
-    const beat = ((t / 320) | 0) % 2;
-    px(26 + beat * 2, 6 - beat, 1); px(27 + beat * 2, 5 - beat, 1); px(84, 8 + beat, 1);
-    /* rug */
-    for (let a = 0; a < 360; a += 3) {
-      const r = a * Math.PI / 180;
-      px(Math.round(64 + 30 * Math.cos(r)), Math.round(80 + 13 * Math.sin(r)), 1);
-      if (a % 12 === 0) px(Math.round(64 + 25 * Math.cos(r)), Math.round(80 + 9 * Math.sin(r)), 1);
-    }
-    /* stools, the friends on them */
-    const here = st.bots.filter((b) => b.state === 'in' && b.house === i);
-    const draw = [];
+    box(64 - (tw >> 1), 6, tw, 9); text(66 - (tw >> 1), 8, name, 1);
+    rect(38, 22, 52, 17, 1); rect(39, 23, 50, 9, 0); rect(40, 35, 48, 1, 0);
+    for (const x of [49, 75]) { ring(x, 27, 4, 1); px(x, 27, 1); rect(x + 5, 24, 1, 3, 1); px(x + 4, 27, 1); }
+    rect(58, 24, 9, 7, 1); for (const [a, b] of [[60, 26], [62, 26], [64, 26], [60, 29], [64, 29]]) px(a, b, 0);
+    rect(86, 16, 1, 7, 1); rect(84, 23, 5, 1, 1); rect(84, 12, 5, 3, 1); rect(83, 15, 7, 1, 1);
+    /* the floor lamp by the sofa, the side table and its lamp */
+    rect(44, 58, 7, 2, 1); rect(47, 37, 1, 21, 1);
+    for (let j = 0; j < 8; j++) rect(45 - (j >> 2), 29 + j, 5 + 2 * (j >> 2), 1, 1);
+    rect(46, 31, 3, 5, 0);
+    box(108, 50, 15, 3); rect(110, 53, 1, 7, 1); rect(120, 53, 1, 7, 1);
+    rect(115, 45, 1, 5, 1); for (let j = 0; j < 5; j++) rect(113 - (j >> 1), 40 + j, 5 + 2 * (j >> 1), 1, 1);
+    rect(114, 42, 3, 2, 0);
+    /* the rug, the cushions round it, the sofa */
+    rug(i % RUGS.length);
     SEATS.forEach(([sx, sy], k) => {
-      rect(sx + 1, sy + 12, 10, 3, 1); rect(sx + 2, sy + 13, 8, 1, 0); rect(sx + 3, sy + 15, 1, 4, 1); rect(sx + 8, sy + 15, 1, 4, 1);
-      if (here[k]) draw.push({ x: sx, y: sy - 2, dir: 'd', moving: false, hair: here[k].hair, shirt: here[k].shirt, name: here[k].name });
+      if (k < SOFA_SEATS) return;
+      oval(sx + 6, sy + 13, 8, 4, 1); oval(sx + 6, sy + 12, 7, 3, 0);
+      px(sx + 6, sy + 12, 1); px(sx + 1, sy + 13, 1); px(sx + 11, sy + 13, 1);
     });
-    /* plant, mat */
-    rect(112, 104, 8, 8, 1); rect(113, 105, 6, 3, 0);
-    for (const [a, b] of [[116, 96], [113, 99], [119, 99], [115, 101], [117, 102], [112, 96], [120, 95]]) rect(a, b, 1, 104 - b, 1);
+    box(4, 40, 38, 11); px(4, 40, 0); px(41, 40, 0); rect(22, 42, 1, 8, 1);
+    box(4, 46, 6, 14); box(36, 46, 6, 14);
+    box(9, 50, 14, 8); box(23, 50, 14, 8); rect(9, 58, 28, 2, 1);
+    /* a plant, the door mat */
+    rect(111, 105, 9, 8, 1); rect(112, 106, 7, 2, 0);
+    for (const [a, b, rx, ry] of [[109, 98, 3, 5], [116, 93, 3, 6], [122, 99, 3, 5]]) { oval(a, b, rx, ry, 1); oval(a, b, rx - 1, ry - 1, 0); rect(a, b - ry + 2, 1, ry * 2 - 2, 1); }
+    rect(115, 99, 1, 6, 1);
     rect(52, 113, 24, 6, 1); for (let x = 54; x < 75; x += 4) rect(x, 114, 2, 4, 0);
-    draw.push(st.p);
+    /* people: the listeners on their seats, and you */
+    const draw = sitters(st).map(([k, b]) => ({ x: SEATS[k][0], y: SEATS[k][1], sit: true, bob: kick, hair: b.hair, shirt: b.shirt, name: b.name }));
+    const me = st.seat >= 0
+      ? { x: SEATS[st.seat][0], y: SEATS[st.seat][1], sit: true, bob: kick, hair: st.p.hair, shirt: st.p.shirt, name: st.p.name }
+      : Object.assign({}, st.p, { bob: kick && !st.p.moving && st.idle > 54 });
+    draw.push(me);
     draw.sort((a, b) => a.y - b.y).forEach((c) => person(c, t));
     draw.forEach(tag);
   }
@@ -805,7 +935,7 @@
     lines.forEach((s, k) => text((W - textW(s)) >> 1, y + 3 + k * 7, s, 1));
   }
 
-  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, sound, atDoor, nearest, doorSpot };
+  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, SEATS, sound, atDoor, nearest, doorSpot };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Street = api;
 })(typeof self !== 'undefined' ? self : this);
 </script>
@@ -943,20 +1073,24 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; show(); 
 /* ---- sound: the nearest houses' own streams, played directly, each fading towards its gain ---- */
 /* iOS ignores an element's volume: it always plays at 1. */
 const canVolume = (() => { const a = new Audio(); a.volume = 0.5; return a.volume === 0.5; })();
-/* So where volume cannot be set, a stream goes through Web Audio, which has its own gain: a real
- * fade. The browser only allows that for streams whose server permits cross-origin reads; one
- * that does not (or fails) is reopened the plain way and is muted unless it is the loudest.
- * ?webaudio=1 forces this path on a desktop, ?webaudio=0 turns it off. */
+/* A stream goes through Web Audio where the browser allows it: a gain of its own (the only way to
+ * fade on iOS) and a tap to hear the beat from. That needs the stream's server to permit
+ * cross-origin reads; one that does not (or fails) is reopened the plain way: faded by its
+ * element's volume where that works, else muted unless it is the loudest. ?webaudio=0 turns
+ * the graph off altogether. */
 const flag = new URLSearchParams(location.search).get('webaudio');
-const useGraph = flag === '1' || (flag !== '0' && !canVolume && !!(window.AudioContext || window.webkitAudioContext));
+const useGraph = flag !== '0' && !!(window.AudioContext || window.webkitAudioContext);
 const playing = new Map();   /* station -> { a: its element, gain: our own fade, node: its gain in the graph or null } */
 const plain = new Set();     /* stations that have to be played the plain way */
-let actx = null, out = null;
+let actx = null, out = null, mix = null, tap0 = null, bins = null;
 
 function graph() {
   if (!actx) {
     actx = new (window.AudioContext || window.webkitAudioContext)();
-    out = actx.createGain(); out.connect(actx.destination);
+    out = actx.createGain(); out.connect(actx.destination);       /* the volume slider and mute */
+    mix = actx.createGain(); mix.connect(out);                    /* every stream at its own fade */
+    tap0 = actx.createAnalyser(); tap0.fftSize = 1024; tap0.smoothingTimeConstant = 0.2;
+    bins = new Uint8Array(tap0.frequencyBinCount); mix.connect(tap0);   /* heard before the volume, so it works muted */
   }
   if (actx.state !== 'running') actx.resume().catch(() => {});
 }
@@ -968,7 +1102,7 @@ function open(w) {
     try {
       e.a.crossOrigin = 'anonymous';
       e.node = actx.createGain(); e.node.gain.value = 0;
-      actx.createMediaElementSource(e.a).connect(e.node); e.node.connect(out);
+      actx.createMediaElementSource(e.a).connect(e.node); e.node.connect(mix);
       e.a.addEventListener('error', () => { plain.add(w.i); if (playing.get(w.i) === e) { shut(e); playing.delete(w.i); } });
     } catch (err) { e.node = null; plain.add(w.i); e.a = new Audio(); }
   }
@@ -995,6 +1129,22 @@ function sound() {
     else e.a.muted = muted || e !== loud || e.gain < 0.03;
   }
 }
+/* The beat, for the room: a kick is the bass band jumping above its own recent average. With no
+ * tap on the stream (played the plain way), a steady two a second stands in while it plays. */
+let bass = 0, lastBeat = 0, pulse = 0;
+function beat(now) {
+  pulse *= 0.72;
+  const e = st.inside >= 0 ? playing.get(st.inside) : null;
+  if (!e || e.gain < 0.5) return pulse;
+  if (e.node && tap0) {
+    tap0.getByteFrequencyData(bins);
+    let b = 0; for (let k = 1; k <= 4; k++) b += bins[k];   /* about 45 to 190 Hz */
+    b /= 4; bass += (b - bass) * 0.06;
+    if (b > bass * 1.22 && b > 90 && now - lastBeat > 270) { lastBeat = now; pulse = 1; }
+  } else if (!e.a.paused && e.a.readyState >= 3 && now - lastBeat > 500) { lastBeat = now; pulse = 1; }
+  return pulse;
+}
+
 /* a touch or key: sound may start, and a suspended graph resumes. Called from the gesture itself, which iOS wants. */
 function wake() {
   if (useGraph) graph();
@@ -1010,24 +1160,26 @@ setMuted(muted);
 /* ---- settings: your name, kept in this browser, and the list of controls ---- */
 tap($('cog'), () => { $('name').value = myName; $('settings').showModal(); });
 
-/* the volume slider: a knob in a slot beside the screen, up is louder */
-const vol = $('vol');
+/* the volume slider: a knob in a slot in the right edge, up is louder, ten detents */
+const vol = $('vol'), DETENTS = 10, TRAVEL = 132 - 24 - 4;
+for (let k = 0; k <= DETENTS; k++) {
+  const tick = document.createElement('i');
+  tick.style.top = (2 + 12 + k * TRAVEL / DETENTS) + 'px'; tick.style.width = (k % 5 === 0 ? 7 : 4) + 'px';
+  $('volprint').appendChild(tick);
+}
 function setVolume(v, save) {
-  master = Math.max(0, Math.min(1, v));
-  const r = vol.getBoundingClientRect(), pad = 26 + 13;
-  $('knob').style.top = (pad + (1 - master) * Math.max(0, r.height - 2 * pad)) + 'px';
-  vol.setAttribute('aria-valuenow', Math.round(master * 100));
-  if (save) store.set('volume', String(Math.round(master * 100)));
+  const n = Math.max(0, Math.min(DETENTS, Math.round(v * DETENTS)));
+  if (n !== Math.round(master * DETENTS) && navigator.vibrate) navigator.vibrate(4);   /* a tick in the hand, where the phone can */
+  master = n / DETENTS;
+  $('knob').style.top = (2 + (1 - master) * TRAVEL) + 'px';
+  vol.setAttribute('aria-valuenow', n);
+  if (save) store.set('volume', String(n * 10));
 }
-function slide(e) {
-  const r = vol.getBoundingClientRect(), pad = 26 + 13;
-  setVolume(1 - (e.clientY - r.top - pad) / Math.max(1, r.height - 2 * pad), false);
-}
+function slide(e) { setVolume(1 - (e.clientY - vol.getBoundingClientRect().top - 14) / TRAVEL, false); }
 vol.addEventListener('pointerdown', (e) => { vol.setPointerCapture(e.pointerId); slide(e); });
 vol.addEventListener('pointermove', (e) => { if (vol.hasPointerCapture(e.pointerId)) slide(e); });
 vol.addEventListener('pointerup', () => setVolume(master, true));
-addEventListener('resize', () => setVolume(master, false));
-requestAnimationFrame(() => setVolume(master, false));
+setVolume(master, false);
 $('settings').addEventListener('close', () => {
   if ($('settings').returnValue !== 'save') return;
   myName = $('name').value.toUpperCase().split('').filter((c) => c !== ' ' && S.FONT[c]).join('').slice(0, 8);
@@ -1047,6 +1199,8 @@ function draw() {
 }
 
 function tick(now) {
+  st.pulse = beat(now);
+  $('hint').classList.toggle('gone', st.woke);
   if (S.advance(st, now, keys, action)) { action = false; sound(); draw(); }
   requestAnimationFrame(tick);
 }
