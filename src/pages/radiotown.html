@@ -511,7 +511,10 @@
     if (hair === 3) {                                    /* a cap: its peak over the brow */
       if (dir === 'd') put(3, 1, 10, '#'); else if (dir === 'r') put(3, 2, 11, '#');
     }
-    if (legs === 3 && firstLeg >= 0 && rows.length === 16) put(firstLeg, dir === 'r' ? 3 : 2, dir === 'r' ? 8 : 9, '#');   /* a skirt */
+    if (legs === 3 && firstLeg >= 0 && rows.length === 16) {   /* a skirt: two rows, flaring out a step from the waist, the legs below it */
+      const side = dir === 'r' ? 1 : 0;
+      put(firstLeg, 2 + side, 9 - side, '#'); put(firstLeg + 1, 1 + side, 10 - side, '#');
+    }
     return out.map((r) => r.join(''));
   }
   /* the dressed sprite: dir 'd', 'u', 'r' (which way it faces, sitting too); frame as in CHAR; sit: 0 standing, else seated */
