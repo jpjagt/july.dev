@@ -168,8 +168,8 @@
 
   /* name, city, minutes from UTC, stream. The town hands out its houses in this order. */
   const STATIONS = [
-    ['NTS 1', 'London', 0, 'https://stream-relay-geo.ntslive.net/stream'],
-    ['NTS 2', 'London', 0, 'https://stream-relay-geo.ntslive.net/stream2'],
+    ['NTS 1', 'London', 0, 'https://streams.radiomast.io/nts1'], /* where ntslive.net/stream redirects to: that hop allows cross-origin reads, NTS's own does not */
+    ['NTS 2', 'London', 0, 'https://streams.radiomast.io/nts2'],
     ['Kiosk', 'Brussels', 60, 'https://kioskradiobxl.out.airtime.pro/kioskradiobxl_a'],
     ['Operator', 'Rotterdam', 60, 'https://origin.streamnerd.nl/operator/operator/icecast.audio'],
     ['Echobox', 'Amsterdam', 60, 'https://play.streamnerd.nl/echobox/echobox/icecast.audio'],
@@ -181,7 +181,7 @@
     ['LYL', 'Lyon', 60, 'https://icecast.lyl.live/live'],
     ['alHara', 'Bethlehem', 120, 'https://stream.radioalhara.net/ra'],
     ['Relate', 'Groningen', 60, 'https://origin.streamnerd.nl/relateradio/relateradio/icecast.audio'],
-    ['Rinse', 'London', 0, 'https://admin.stream.rinse.fm/proxy/rinse_uk/stream'],
+    ['Rinse', 'London', 0, 'https://admin.stream.rinse.fm/proxy/rinse_uk/stream', 1], /* 1: no cross-origin reads */
     ['Resonance', 'London', 0, 'https://stream.resonance.fm/resonance'],
     ['Netil', 'London', 0, 'https://netilradio.out.airtime.pro/netilradio_a'],
     ['Soho', 'London', 0, 'https://sohoradiomusic.doughunt.co.uk:8010/128mp3'],
@@ -191,8 +191,8 @@
     ['Movement', 'Athens', 120, 'https://movementathens.out.airtime.pro/movementathens_a'],
     ['Callshop', 'Dusseldorf', 60, 'https://icecast.callshopradio.com/callshopradio'],
     ['Skylab', 'Melbourne', 660, 'https://stream.skylab-radio.com/live'],
-    ['BFF.fm', 'San Francisco', -480, 'https://stream.bff.fm/1/mp3.mp3'],
-  ].map(([name, city, off, url]) => ({ name, city, off, url }));
+    ['BFF.fm', 'San Francisco', -480, 'https://stream.bff.fm/1/mp3.mp3', 1],
+  ].map(([name, city, off, url, closed]) => ({ name, city, off, url, closed: !!closed }));
 
   /* ---- 3x5 font ---- */
   const FONT = {
@@ -857,34 +857,65 @@ addEventListener('keyup', (e) => {
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; show(); });
 
 /* ---- sound: the nearest houses' own streams, played directly, each fading towards its gain ---- */
-/* iOS ignores an element's volume (it always plays at 1). There, only the loudest stream is
- * unmuted, and loudness is the phone's own buttons. */
+/* iOS ignores an element's volume: it always plays at 1. */
 const canVolume = (() => { const a = new Audio(); a.volume = 0.5; return a.volume === 0.5; })();
-const playing = new Map();   /* station -> { a: its element, gain: our own fade, never read back from the element } */
+/* So where volume cannot be set, a stream goes through Web Audio, which has its own gain: a real
+ * fade. The browser only allows that for streams whose server permits cross-origin reads; one
+ * that does not (or fails) is reopened the plain way and is muted unless it is the loudest.
+ * ?webaudio=1 forces this path on a desktop, ?webaudio=0 turns it off. */
+const flag = new URLSearchParams(location.search).get('webaudio');
+const useGraph = flag === '1' || (flag !== '0' && !canVolume && !!(window.AudioContext || window.webkitAudioContext));
+const playing = new Map();   /* station -> { a: its element, gain: our own fade, node: its gain in the graph or null } */
+const plain = new Set();     /* stations that have to be played the plain way */
+let actx = null, out = null;
+
+function graph() {
+  if (!actx) {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    out = actx.createGain(); out.connect(actx.destination);
+  }
+  if (actx.state !== 'running') actx.resume().catch(() => {});
+}
+function shut(e) { e.a.pause(); e.a.removeAttribute('src'); e.a.load(); if (e.node) e.node.disconnect(); }
+
+function open(w) {
+  const e = { a: new Audio(), gain: 0, node: null };
+  if (useGraph && actx && !S.STATIONS[w.i].closed && !plain.has(w.i)) {
+    try {
+      e.a.crossOrigin = 'anonymous';
+      e.node = actx.createGain(); e.node.gain.value = 0;
+      actx.createMediaElementSource(e.a).connect(e.node); e.node.connect(out);
+      e.a.addEventListener('error', () => { plain.add(w.i); if (playing.get(w.i) === e) { shut(e); playing.delete(w.i); } });
+    } catch (err) { e.node = null; plain.add(w.i); e.a = new Audio(); }
+  }
+  if (!e.node) { e.a.volume = canVolume ? 0 : 1; e.a.muted = true; }
+  e.a.src = w.url;
+  e.a.play().catch(() => {});
+  playing.set(w.i, e);
+}
 
 function sound() {
   const want = started ? S.sound(st) : [];
-  for (const w of want) {
-    if (playing.has(w.i)) continue;
-    const a = new Audio(w.url);
-    a.volume = canVolume ? 0 : 1; a.muted = true;
-    a.play().catch(() => {});
-    playing.set(w.i, { a, gain: 0 });
-  }
+  for (const w of want) if (!playing.has(w.i)) open(w);
   let loud = null;
   for (const [i, e] of playing) {
     const w = want.find((x) => x.i === i), target = w ? w.gain : 0;
     e.gain += Math.max(-0.04, Math.min(0.04, target - e.gain));
-    if (!w && e.gain <= 0.001) { e.a.pause(); e.a.removeAttribute('src'); e.a.load(); playing.delete(i); continue; }
+    if (!w && e.gain <= 0.001) { shut(e); playing.delete(i); continue; }
     if (!loud || e.gain > loud.gain) loud = e;
   }
+  if (out) out.gain.value = muted ? 0 : master;
   for (const e of playing.values()) {
-    if (canVolume) { e.a.volume = Math.max(0, Math.min(1, e.gain * master)); e.a.muted = muted; }
+    if (e.node) e.node.gain.value = e.gain;
+    else if (canVolume) { e.a.volume = Math.max(0, Math.min(1, e.gain * master)); e.a.muted = muted; }
     else e.a.muted = muted || e !== loud || e.gain < 0.03;
   }
 }
-/* the first touch or key: sound may start. Called from the gesture itself, which iOS wants. */
-function wake() { if (!started) { started = true; sound(); } }
+/* a touch or key: sound may start, and a suspended graph resumes. Called from the gesture itself, which iOS wants. */
+function wake() {
+  if (useGraph) graph();
+  if (!started) { started = true; sound(); }
+}
 addEventListener('pointerup', wake);
 addEventListener('touchend', wake);
 
@@ -893,7 +924,7 @@ tap($('mute'), () => setMuted(!muted));
 setMuted(muted);
 
 /* ---- settings: your name and the volume, kept in this browser ---- */
-$('volrow').hidden = !canVolume; $('volnote').hidden = canVolume;
+$('volrow').hidden = !(canVolume || useGraph); $('volnote').hidden = canVolume || useGraph;
 tap($('cog'), () => { $('name').value = myName; $('vol').value = Math.round(master * 100); $('settings').showModal(); });
 $('vol').addEventListener('input', () => { master = $('vol').value / 100; });
 $('settings').addEventListener('close', () => {
