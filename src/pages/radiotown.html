@@ -124,8 +124,8 @@
 <body>
 <main>
   <div class="case">
-    <button class="slide" id="mode" role="switch" aria-checked="false" aria-label="2D town"></button>
-    <div class="slide-print"><span>1D</span><span>2D</span></div>
+    <button class="slide" id="mode" role="switch" aria-checked="true" aria-label="Power"></button>
+    <div class="slide-print"><span>OFF</span><span>ON</span></div>
     <div class="bezel"><canvas id="lcd" width="128" height="128"></canvas></div>
     <div class="vol-print" id="volprint" aria-hidden="true"></div>
     <div class="vol" id="vol" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="10"><div class="knob" id="knob"></div></div>
@@ -491,7 +491,7 @@
    * dress() turns a sheet of part letters into plain dark and light for one look. dir is 'd', 'u'
    * or 'r' (left is right mirrored). */
   const DRESSED = new Map();
-  function dress(rows, look, dir) {
+  function dress(rows, look, dir, noEyes) {
     const hair = look & 3, face = (look >> 2) & 3, shirt = (look >> 4) & 3, legs = (look >> 6) & 3;
     const skin = 'o';
     const firstLeg = rows.findIndex((r) => r.includes('l')), eyes = rows.findIndex((r) => r.includes('e'));
@@ -499,12 +499,12 @@
       if (ch === 'h') return hair === 1 ? 'o' : hair === 3 ? (j < 3 ? '#' : skin) : '#';
       if (ch === 'f') return skin;
       if (ch === 'e') return skin;   /* the eyes are drawn below, by the face chosen */
-      if (ch === 'x') return shirt === 0 ? '#' : shirt === 1 ? 'o' : shirt === 2 ? (j & 1 ? '#' : 'o') : (i === 5 || i === 6 ? 'o' : '#');
+      if (ch === 'x') return shirt === 0 ? '#' : shirt === 1 ? 'o' : shirt === 2 ? ((j + (dir === 'r' ? 1 : 0)) & 1 ? '#' : 'o') /* from the side the dark stripes fall on the rows without the hand, so they cross the whole body */ : (i === 5 || i === 6 ? 'o' : '#');
       if (ch === 'l') return legs === 1 ? '#' : legs === 2 ? (j === firstLeg ? '#' : skin) : 'o';
       return ch;
     }));
     const put = (j, a, b, c) => { for (let i = a; i <= b; i++) if (out[j] && out[j][i] !== undefined) out[j][i] = c; };
-    if (eyes >= 0) {
+    if (eyes >= 0 && !noEyes) {
       const E = eyes, dot = (j, i) => put(j, i, i, '#');
       if (dir === 'r') {
         if (face === 0) dot(E, 8);                                                    /* an eye */
@@ -538,6 +538,29 @@
     if (!DRESSED.has(key)) DRESSED.set(key, sit ? dress(dir === 'r' ? SIT_SIDE : dir === 'u' ? SIT_BACK : SIT, look, dir) : dress(CHAR[dir][frame], look, dir));
     return DRESSED.get(key);
   }
+  /* One part of a look by itself, seen from the front, for the character screen: 0 the hair or
+   * hat, 1 the eyes, 2 the shirt, 3 the legs. Only that part's own pixels, with rows that hold
+   * nothing left off: a hat is a hat, not a hat on a head. */
+  function part(look, k) {
+    const src = CHAR.d[0], full = dress(src, look, 'd');
+    let rows;
+    if (k === 0) {
+      const short = dress(src, look & ~3, 'd'), cap = (look & 3) === 3;
+      const hair = (j, i) => j >= 0 && j < 9 && (((src[j][i] === 'h') && !(cap && j >= 4)) || full[j][i] !== short[j][i]);
+      rows = full.slice(0, 9).map((r, j) => r.split('').map((c, i) => {
+        if (hair(j, i)) return c;
+        return src[j][i] === '#' && (hair(j - 1, i) || hair(j + 1, i) || hair(j, i - 1) || hair(j, i + 1)) ? '#' : '.';   /* the outline that closes it */
+      }).join(''));
+    } else if (k === 1) {
+      const bare = dress(src, look, 'd', true);
+      rows = full.map((r, j) => r.split('').map((c, i) => (c !== bare[j][i] ? c : '.')).join(''));
+    } else if (k === 2) {
+      rows = dress(src, look & ~3, 'd').slice(8, 12).map((r, j) => r.split('').map((c, i) => (src[8 + j][i] === 'f' ? '.' : c)).join(''));   /* without long hair on the shoulders */
+    } else rows = full.slice(12);
+    rows = rows.filter((r) => /[#o]/.test(r));
+    return rows.length ? rows : ['............'];
+  }
+
   /* a character without a look of its own (the old bots: dark or fair hair, dark or light shirt) */
   function lookFor(c) { return typeof c.look === 'number' ? c.look & 255 : (c.hair ? 0 : 1) | ((c.shirt ? 0 : 1) << 4); }
 
@@ -1141,7 +1164,7 @@
       rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#' || r[i] === 'o') rect(x + i * scale, y + j * scale, scale, scale, r[i] === '#' ? 1 : 0); });
     } };
 
-  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, gfx, figure, layout, sound, atDoor, nearest, doorSpot,
+  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, gfx, figure, part, layout, sound, atDoor, nearest, doorSpot,
     ROOM, SPEED, SPRINT, feetBlocked, onSeating: (lay, x, y) => onSeating(lay, x, y) };   /* the last row: what the multiplayer server checks moves against */
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Street = api;
 })(typeof self !== 'undefined' ? self : this);
@@ -1631,45 +1654,56 @@
   }
 
   /* Frames in, pieces to decode out. A piece is up to `max` seconds of new frames with the last
-   * `pre` seconds of the piece before it in front (none after a gap: then it is `fresh`). */
+   * `pre` seconds of the piece before it in front (none after a gap: then it is `fresh`).
+   * `step` (frames) is for streams the decoder resamples: every piece of a run then starts a
+   * multiple of `step` frames after the run's first, which takes a little more in front. */
   function chunker(pre) {
-    let q = [], lead = [], held = 0;
+    let q = [], kept = [], held = 0, pos = 0, anchor = 0;   /* pos: how many frames have left q; anchor: pos where this run began */
+    const mod = (a, m) => ((a % m) + m) % m;
     const c = {
+      step: 1,
       get held() { return held; },
       add(frames) { for (const fr of frames) { q.push(fr); held += fr.dur; } },
-      /* a piece of at least `min` seconds (of exactly `count` frames, if given), or what stands before a gap, or null */
-      take(min, max, count) {
+      /* A piece of at least `min` seconds, or what stands before a gap, or null. `tidy` (with a
+       * step): of the length near `max` after which the next piece needs no more than `pre` in front. */
+      take(min, max, tidy) {
         if (!q.length) return null;
+        const fresh = q[0].gap || !kept.length, d = q[0].dur, back = Math.max(1, Math.ceil(pre / d - 1e-9));
+        let want = 0;
+        if (tidy && c.step > 1 && !fresh) {
+          const r = mod(back + anchor - pos, c.step), target = Math.round(max / d);
+          want = r + c.step * Math.max(0, Math.round((target - r) / c.step));
+          if (want < target / 3) want += c.step;
+        }
         let n = 0, dur = 0, cut = false;
-        while (n < q.length && (count ? n < count : dur < max)) { if (n && q[n].gap) { cut = true; break; } dur += q[n].dur; n++; }
-        if ((count ? n < count : dur < min) && !cut) return null;
-        const fresh = q[0].gap || !lead.length;
-        if (fresh) lead = [];
-        const taken = q.splice(0, n), all = lead.concat(taken);
-        held = q.length ? held - dur : 0;
+        while (n < q.length && (want ? n < want : dur < max)) { if (n && q[n].gap) { cut = true; break; } dur += q[n].dur; n++; }
+        if ((want ? n < want : dur < min) && !cut) return null;
+        if (fresh) { kept = []; anchor = pos; }
+        let from = Math.max(0, kept.length - back);
+        if (c.step > 1) { const over = mod(pos - kept.length + from - anchor, c.step); if (over <= from) from -= over; }
+        const lead = kept.slice(from), taken = q.splice(0, n), all = lead.concat(taken);
+        pos += n; held = q.length ? held - dur : 0;
         let size = 0, preDur = 0;
         for (const fr of all) size += fr.data.length;
         for (const fr of lead) preDur += fr.dur;
         const data = new Uint8Array(size);
         let o = 0;
         for (const fr of all) { data.set(fr.data, o); o += fr.data.length; }
-        let k = all.length, d = 0;
-        while (k > 0 && d < pre) d += all[--k].dur;
-        lead = all.slice(k);
+        kept = kept.concat(taken).slice(-(back + c.step - 1));
         return { data, fresh, pre: preDur, dur, frames: all.length };
       },
       /* too much is waiting: forget the oldest, keep `keep` seconds. Returns the seconds dropped. */
       drop(keep) {
         let d = 0;
-        while (q.length && held - d > keep) d += q.shift().dur;
+        while (q.length && held - d > keep) { d += q.shift().dur; pos++; }
         held = q.length ? held - d : 0;
         if (q.length) q[0].gap = true;
-        lead = [];
+        kept = [];
         return d;
       },
       /* the next piece starts on its own */
-      reset() { lead = []; },
-      clear() { q = []; lead = []; held = 0; },
+      reset() { kept = []; },
+      clear() { q = []; kept = []; held = 0; },
     };
     return c;
   }
@@ -1742,16 +1776,16 @@
         minCorr: 1, errSum: 0, errMax: 0, offMin: 1e9, offMax: -1e9, underruns: 0, decodeFails: 0, reconnects: 0, dropped: 0, decodeMs: 0, lost: 0 };
       let on = false, ac = null, run = 0, busy = false, failed = false;
       let prev = null;                 /* the last piece placed: { buf, cut, n (clock sample of cut), total (seconds of stream in buf) } */
-      let need = START, hint = 0, fails = 0, since = 0, firstAt = 0, got = false, even = 0;
+      let need = START, hint = 0, fails = 0, firstAt = 0, got = false;
 
       /* Where the stream's rate is not the output's, the decoder also resamples, and two pieces line
-       * up to the sample only if they start a whole number of output samples apart. So a piece is
-       * a number of frames for which that holds (49 MP3 frames from 44.1 to 48 kHz), where such a
-       * number is near a second. Otherwise (0) any length will do, and a join is up to half a sample out. */
+       * up to the sample only if they start a whole number of output samples apart: that many
+       * frames (49 MP3 frames from 44.1 to 48 kHz) is the chunker's step. Where it would be too
+       * many (AAC from 44.1 to 48 kHz: 147), 1: a join is then up to half a sample out. */
       function whole(spf, rate) {
         const gcd = (a, b) => b ? gcd(b, a % b) : a;
-        const b = rate / gcd(rate, spf * ctx.sampleRate), sec = b * spf / rate;
-        return b > 1 && sec <= 2.2 ? Math.max(1, Math.round(CHUNK / sec)) * b : 0;
+        const b = rate / gcd(rate, spf * ctx.sampleRate);
+        return b * spf / rate <= 2.2 ? b : 1;
       }
 
       function fail(why) {
@@ -1787,7 +1821,7 @@
               if (fr.dead) return fail('format: ' + fr.why);
               if (out.length) {
                 if (!got) { stats.kind = fr.kind; stats.rate = fr.rate; stats.bitrate = fr.bitrate; }
-                if (!frames) even = whole(Math.round(out[0].dur * fr.rate), fr.rate);
+                if (!frames) ch.step = whole(Math.round(out[0].dur * fr.rate), fr.rate);
                 got = true; frames += out.length; stats.lost = fr.lost;
                 if (frames > 200) { wait = 1000; empty = 0; }
                 ch.add(out); pump();
@@ -1810,7 +1844,8 @@
         const sr = ctx.sampleRate, L = buf.length, F = Math.round(FADE * sr), cut = L - Math.round(TAIL * sr) - F;
         const now = Math.ceil(ctx.currentTime * sr);
         let h = Math.round((piece.fresh ? WARM : piece.pre) * sr), n0 = now + Math.round(LEAD * sr), joined = false;
-        if (prev && prev.n > now + F) {
+        if (prev && prev.n <= now + F) { stats.underruns++; firstAt = 0; }     /* decoded too late to follow on: a short silence */
+        else if (prev) {
           n0 = prev.n;                                                        /* never before the piece that is sounding ends */
           if (!piece.fresh) {
             const guess = prev.cut - Math.round((prev.total - piece.pre) * sr);   /* the sample of buf that is prev.cut of prev.buf, if the decoder is regular */
@@ -1862,7 +1897,7 @@
         const ahead = prev ? prev.n / sr - now : 0;
         if (prev && ahead > AHEAD) return;
         const piece = !prev ? (ch.held >= need ? ch.take(0, CHUNK) : null)
-          : ahead < LOW ? ch.take(SHORT, CHUNK) : ch.take(CHUNK, CHUNK, even);
+          : ahead < LOW ? ch.take(SHORT, CHUNK) : ch.take(CHUNK, CHUNK, true);
         if (!piece) return;
         const my = run, t0 = performance.now();
         busy = true;
@@ -1879,7 +1914,7 @@
 
       return {
         bus, stats,
-        start() { if (!on && !failed) { since = performance.now(); connect(); } },
+        start() { if (!on && !failed) connect(); },
         halt,                                             /* stop fetching and sounding; start() calls again */
         pump,
         get on() { return on; },
@@ -1888,7 +1923,6 @@
         get audible() { return on && ctx.state === 'running' && !!prev && firstAt > 0 && ctx.currentTime > firstAt + 0.05 && ctx.currentTime * ctx.sampleRate < prev.n; },
         get held() { return ch.held; },
         get ahead() { return prev ? prev.n / ctx.sampleRate - ctx.currentTime : 0; },
-        get age() { return performance.now() - since; },
       };
     }
 
@@ -2069,7 +2103,7 @@ function setMode(m) {
   st = S.create(m, (Math.random() * 1e9) | 0);
   st.p.name = myName; st.p.look = savedLook();
   if (net) { if (m === '2d') st.bots = []; net.attach(st); }   /* with a server the town has its real visitors, or nobody */
-  mode.setAttribute('aria-checked', m === '2d');
+  store.set('view', m);
   dpad.classList.toggle('one', m === '1d');
 }
 
@@ -2163,7 +2197,13 @@ dpad.addEventListener('pointercancel', lift);
 
 hold(btnA, () => { action = true; }, () => {});
 hold(btnB, () => { keys.run = true; }, () => { keys.run = false; });
-tap(mode, () => setMode(st.mode === '1d' ? '2d' : '1d'));
+/* the switch in the top edge: off is a dark screen and silence, on is the town as you left it */
+let power = true;
+tap(mode, () => {
+  power = !power; mode.setAttribute('aria-checked', power);
+  if (!power && menu.open) menu.toggle();
+  for (const k in keys) keys[k] = false; show();
+});
 
 const KEY = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Shift: 'run', b: 'run', B: 'run' };
 const A_KEYS = { ' ': 1, Enter: 1, a: 1, A: 1 };
@@ -2235,7 +2275,7 @@ function open(w) {
 }
 
 function sound() {
-  const want = started ? S.sound(st) : [];
+  const want = started && power ? S.sound(st) : [];
   for (const w of want) if (!playing.has(w.i)) open(w);
   let loud = null;
   for (const [i, e] of playing) {
@@ -2283,7 +2323,7 @@ tap($('mute'), () => setMuted(!muted));
 setMuted(muted);
 
 /* ---- settings: on the screen itself, see the menu below ---- */
-tap($('cog'), () => menu.toggle());
+tap($('cog'), () => { if (power) menu.toggle(); });
 
 /* the volume slider: a knob in a slot in the right edge, up is louder, ten detents */
 const vol = $('vol'), DETENTS = 10, TRAVEL = 132 - 24 - 4;
@@ -2314,15 +2354,24 @@ if (!canVolume && !useGraph && !useDecode) { vol.hidden = true; $('volprint').hi
  * A, beside a preview that turns on the spot. Nothing is a web form. */
 const menu = (() => {
   const G = S.gfx, touch = matchMedia('(pointer: coarse)').matches;
-  const ROWS = ['NAME', 'CHARACTER', 'CONTROLS', 'CLOSE'];
+  const ROWS = ['NAME', 'CHARACTER', 'VIEW', 'CONTROLS', 'CLOSE'];
   const GRID = ['ABCDEFGHI', 'JKLMNOPQR', 'STUVWXYZ-', '012345678'].map((r) => r.split('').map((c, k) => ({ label: c, col: k, w: 1 })));
   GRID.push([{ label: '9', col: 0, w: 1 }, { label: '.', col: 1, w: 1 }, { label: 'DEL', col: 3, w: 3 }, { label: 'OK', col: 7, w: 2 }]);
   const HELP = touch
-    ? [['CROSS', 'WALK'], ['A', 'IN, OUT, SIT'], ['B', 'SPRINT'], ['SWITCH', 'STREET / TOWN'], ['SPEAKER', 'MUTE'], ['SLIDER', 'VOLUME']]
-    : [['ARROWS', 'WALK'], ['A / SPACE', 'IN, OUT, SIT'], ['B / SHIFT', 'SPRINT'], ['M', 'MUTE'], ['SWITCH', 'STREET / TOWN'], ['SLIDER', 'VOLUME']];
+    ? [['CROSS', 'WALK'], ['A', 'IN, OUT, SIT'], ['B', 'SPRINT'], ['SWITCH', 'OFF / ON'], ['SPEAKER', 'MUTE'], ['SLIDER', 'VOLUME']]
+    : [['ARROWS', 'WALK'], ['A / SPACE', 'IN, OUT, SIT'], ['B / SHIFT', 'SPRINT'], ['M', 'MUTE'], ['SWITCH', 'OFF / ON'], ['SLIDER', 'VOLUME']];
   /* the four parts of a look: which sprite rows show the part, two bits each from the bottom */
-  const PARTS = [{ from: 0, to: 8 }, { from: 3, to: 8 }, { from: 8, to: 12 }, { from: 12, to: 16 }];
   const m = { open: false, screen: 'main', row: 0, r: 0, c: 0, draft: '', part: 0 };
+  /* the preview's small life: mostly standing, now and then a turn or a couple of steps */
+  const act = { dir: 'd', walk: false, until: 0 };
+  function idle(now) {
+    if (now < act.until) return;
+    const r = Math.random(), sides = ['d', 'r', 'l', 'u', 'd', 'r', 'l'].filter((d) => d !== act.dir);
+    if (act.walk || r < 0.5) { act.walk = false; act.until = now + 700 + Math.random() * 1400; }                     /* stand */
+    else if (r < 0.75) { act.dir = sides[(Math.random() * sides.length) | 0]; act.until = now + 500 + Math.random() * 700; }   /* turn, and stand */
+    else { act.walk = true; act.until = now + 640; }                                                                  /* two steps on the spot */
+  }
+  const settle = () => { act.dir = 'd'; act.walk = false; act.until = performance.now() + 1400; };   /* after a change: face us a moment */
   const held = {}; let wasRun = false;
 
   const profile = () => { if (window.onProfileChange) window.onProfileChange(); };
@@ -2333,7 +2382,7 @@ const menu = (() => {
   function turn(part, by) {   /* the next or the previous of a part's four */
     const shift = part * 2, now = (st.p.look >> shift) & 3;
     st.p.look = (st.p.look & ~(3 << shift)) | (((now + by + 4) & 3) << shift);
-    store.set('look', String(st.p.look)); profile();
+    store.set('look', String(st.p.look)); profile(); settle();
   }
   function type(ch) { if (m.draft.length < 8 && ch !== ' ' && S.FONT[ch]) m.draft += ch; }
   function press(b) {
@@ -2342,9 +2391,11 @@ const menu = (() => {
       if (b === 'up') m.row = (m.row + ROWS.length - 1) % ROWS.length;
       else if (b === 'down') m.row = (m.row + 1) % ROWS.length;
       else if (b === 'B') m.open = false;
+      else if ((b === 'left' || b === 'right') && row === 'VIEW') setMode(st.mode === '1d' ? '2d' : '1d');
       else if (b === 'A') {
         if (row === 'NAME') { m.screen = 'name'; m.draft = myName; m.r = 0; m.c = 0; }
-        else if (row === 'CHARACTER') { m.screen = 'character'; m.part = 0; }
+        else if (row === 'CHARACTER') { m.screen = 'character'; m.part = 0; settle(); }
+        else if (row === 'VIEW') setMode(st.mode === '1d' ? '2d' : '1d');
         else if (row === 'CONTROLS') m.screen = 'controls';
         else m.open = false;
       }
@@ -2409,35 +2460,37 @@ const menu = (() => {
     G.on(buf);
     G.rect(5, 4, 118, 112, 0); G.box(6, 5, 116, 109); G.rect(8, 114, 114, 1, 1);
     const title = { main: 'SETTINGS', name: 'NAME', character: 'CHARACTER', controls: 'CONTROLS' }[m.screen];
-    G.text(12, 10, title, 1); for (let x = 12; x < 116; x += 2) G.px(x, 18, 1);
+    G.text(12, 10, title, 1); G.rect(7, 18, 114, 1, 1);   /* the rule under the title runs from edge to edge, like the one over the foot */
     if (m.screen === 'main') {
       ROWS.forEach((row, k) => {
-        const y = 28 + k * 14, on = k === m.row;
+        const y = 27 + k * 13, on = k === m.row;
         if (on) G.rect(10, y - 3, 108, 11, 1);
         G.text(14, y, row, on ? 0 : 1);
-        if (row === 'NAME') { const v = myName || '-'; G.text(114 - G.textW(v), y, v, on ? 0 : 1); }
+        const v = row === 'NAME' ? myName || '-' : row === 'VIEW' ? (st.mode === '1d' ? 'STREET' : 'TOWN') : '';
+        if (v) G.text(114 - G.textW(v), y, v, on ? 0 : 1);
       });
       foot('CHOOSE', 'BACK');
     } else if (m.screen === 'controls') {
       /* a table: what you press, what it does */
-      G.box(10, 23, 108, 68); G.rect(54, 23, 1, 68, 1);
+      for (let y = 20; y < 96; y += 2) G.px(54, y, 1);   /* dashed down; solid across, from edge to edge of the window */
       HELP.forEach(([k, what], i) => {
-        const y = 26 + i * 11;
-        if (i) for (let x = 12; x < 116; x += 2) G.px(x, y - 3, 1);
-        G.text(14, y, k, 1); G.text(58, y, what, 1);
+        const y = 18 + i * 13;
+        if (i) G.rect(7, y, 114, 1, 1);
+        G.text(12, y + 5, k, 1); G.text(59, y + 5, what, 1);
       });
       foot('BACK', 'BACK');
     } else if (m.screen === 'character') {
-      const look = st.p.look, front = S.figure(look, 'd', 0, 0);
-      PARTS.forEach((p, k) => {
-        const y = 23 + k * 18, on = k === m.part, rows = front.slice(p.from, p.to);
+      const look = st.p.look;
+      [0, 1, 2, 3].forEach((k) => {
+        const y = 23 + k * 18, on = k === m.part, rows = S.part(look, k);   /* the part by itself */
         if (on) { G.box(10, y, 62, 17); G.text(14, y + 6, '<', 1); G.text(65, y + 6, '>', 1); }
         G.rows(29, y + ((17 - rows.length * 2) >> 1), rows, 2);
       });
-      /* the preview: turning on the spot, a step now and then */
+      /* the preview: mostly standing, now and then a turn or two steps */
       G.box(76, 23, 42, 71);
-      const beat = (now / 450) | 0, dir = ['d', 'r', 'u', 'l'][((beat / 4) | 0) % 4], frame = beat % 2;
-      let rows = S.figure(look, dir === 'l' ? 'r' : dir, dir === 'd' || dir === 'u' ? (frame ? 1 : 2) : frame, 0);
+      idle(now);
+      const dir = act.dir, step = act.walk ? ((now / 160) | 0) % 2 : -1;
+      let rows = S.figure(look, dir === 'l' ? 'r' : dir, step < 0 ? 0 : dir === 'd' || dir === 'u' ? 1 + step : step, 0);
       if (dir === 'l') rows = rows.map((r) => r.split('').reverse().join(''));
       G.rows(85, 34, rows, 2);
       const tagged = myName || '';
@@ -2459,8 +2512,10 @@ const menu = (() => {
 
 function draw() {
   const d = new Date();
-  S.render(st, fb, d.getUTCHours() * 60 + d.getUTCMinutes());
-  if (menu.open) menu.draw(fb, performance.now());
+  if (!power) fb.fill(0);   /* off: a blank screen */
+  else S.render(st, fb, d.getUTCHours() * 60 + d.getUTCMinutes());
+  if (!power) { /* nothing over it */ }
+  else if (menu.open) menu.draw(fb, performance.now());
   else if (!started) S.notice(fb, ['PRESS A BUTTON', 'TO START THE SOUND']);
   for (let i = 0; i < fb.length; i++) {
     const on = fb[i], o = i * 4;
@@ -2473,15 +2528,19 @@ function tick(now) {
   st.pulse = beat(now);
   $('hint').classList.toggle('gone', st.woke);
   /* the tab says where you are listening */
-  const title = st.inside >= 0 ? S.STATIONS[st.inside].name + ' on radiotown' : 'radiotown';
+  const title = power && st.inside >= 0 ? S.STATIONS[st.inside].name + ' on radiotown' : 'radiotown';
   if (document.title !== title) document.title = title;
   /* with the menu open the town goes on, but the buttons work the menu and you stand still */
   const paused = menu.open;
+  if (!power) {   /* off: the town waits, the sound fades away */
+    action = false; st.last = now; sound(); draw();
+    requestAnimationFrame(tick); return;
+  }
   if (paused) menu.input(now);
   if (S.advance(st, now, paused ? IDLE : keys, !paused && action)) { if (!paused) action = false; if (net) { net.send(st, now); net.apply(st, now); } sound(); draw(); }
   requestAnimationFrame(tick);
 }
-setMode('2d');
+setMode(store.get('view', '2d') === '1d' ? '1d' : '2d');
 draw();
 requestAnimationFrame(tick);
 </script>
