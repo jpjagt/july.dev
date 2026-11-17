@@ -1970,7 +1970,7 @@
       const node = ctx.createGain(), feed = o.tap ? ctx.createGain() : null;
       node.gain.value = 0; p.bus.connect(node); node.connect(o.to);
       if (feed) { feed.gain.value = 0; p.bus.connect(feed); feed.connect(o.tap); }
-      let phase = 'out', el = null, refused = false, armed = 0, swapped = -1e9, cool = 0;
+      let phase = 'out', el = null, refused = false, armed = 0, swapped = -1e9, cool = 0, stops = 0;
       const e = { a: STUB, gain: 0, node, dec: null, gone: false };
       const swaps = [];       /* for the tests: when each hand-over happened */
 
@@ -2007,8 +2007,8 @@
             if (!inside && (p.audible || p.failed || el.a.paused)) {            /* out of the door, and the decoded stream is there to take over */
               release(); phase = 'out'; swapped = performance.now();
               swaps.push({ to: 'decoded', at: swapped });
-            } else if (inside && el.a.paused && !document.hidden) {            /* the element stopped (refused, or interrupted): the decoded stream again, and another try later */
-              release(); phase = 'out'; swapped = performance.now(); cool = swapped + 15000;
+            } else if (inside && el.a.paused && !document.hidden) {            /* the element stopped (not allowed after all, or interrupted): the decoded stream again; two more tries, a while apart */
+              release(); phase = 'out'; swapped = performance.now(); cool = ++stops < 3 ? swapped + 15000 * stops : Infinity;
               swaps.push({ to: 'decoded', at: swapped, why: 'element paused' });
             }
           }
@@ -2081,7 +2081,7 @@ let myName = store.get('name', ''), master = +store.get('volume', '80') / 100, m
 /* ---- the other visitors (net.js). Off until a server is named: the town is then as it was. ----
  * NET_URL is the production server, e.g. 'wss://radiotown.july.dev/ws'. ?server=ws://localhost:8787
  * points a page at another one, ?solo=1 turns it off; ?lag= ?jitter= ?stall= (ms) make the line bad, for testing. */
-const NET_URL = '';
+const NET_URL = 'wss://radiotown.july.dev/ws';
 const query = new URLSearchParams(location.search);
 let myId = store.get('id', '');
 if (!/^[a-f0-9]{32}$/.test(myId)) {
