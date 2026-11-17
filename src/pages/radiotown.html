@@ -18,7 +18,8 @@
 <meta name="twitter:title" content="radiotown">
 <meta name="twitter:description" content="listen to some tunes &amp; hang out">
 <meta name="twitter:image" content="https://july.dev/radiotown.png">
-<meta name="theme-color" content="#171715">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#d8d3c6">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#2d2c29">
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAcUlEQVR4nO3TuwnAMAxFUc8RvP8arl1kJy+QgASSP88XbinEKaTS37ZVZbkAUBSo1uczQICsoFVQQPqgbCigs0F/S7MDpAmKOnbLEwDSB3kP07sT0F2gqCcAdC/IctTeGUD6oIwA6YNmBkgHtEOAjgMNhSgVEsnkizgAAAAASUVORK5CYII=">
 <style>
   :root { --bg: #e9e6df; --ink: #1c1c1a; --case: #d8d3c6; --case-lo: #c4bfb1; --lcd: #c9cdbf; --dim: #77736a;
@@ -99,10 +100,24 @@
   #mute[aria-pressed="true"] .off { display: block; }
 
 
+  /* On a phone the phone is the device: the case fills the whole screen, edge to edge, with no
+   * card, margin or shadow around it. The screen sits at the top, the controls share what is
+   * left below. The switch and the volume slider, which stick out of the case's edges on a
+   * desktop, sit just inside the phone's own edges. */
   @media (pointer: coarse) {
-    body { padding-top: 26px; }
-    .case { padding: 34px 22px 74px; }   /* room above the screen and below the controls for a hand */
-    .deck { margin-top: 34px; }
+    body { display: block; padding: 0; background: var(--case-lo); }
+    main { width: 100%; height: 100%; }
+    .case { height: 100%; border-radius: 0; box-shadow: none; display: flex; flex-direction: column;
+      padding: calc(env(safe-area-inset-top, 0px) + 46px) 26px calc(env(safe-area-inset-bottom, 0px) + 78px); }
+    .bezel { flex: none; }
+    .deck { flex: 1; margin-top: 0; align-items: center; min-height: 150px; }
+    .slide { top: calc(env(safe-area-inset-top, 0px) + 12px); border-radius: 4px; }
+    .slide::after { top: -1px; height: 16px; border-radius: 3px; }
+    .slide-print { top: calc(env(safe-area-inset-top, 0px) + 30px); }
+    .vol { right: 0; top: calc(env(safe-area-inset-top, 0px) + 110px); border-radius: 4px 0 0 4px; box-shadow: -2px 0 3px #000000a6 inset, 0 1px 0 #ffffff1f; }
+    .vol .knob { left: -4px; border-radius: 3px 1px 1px 3px; }
+    .vol-print { display: none; }   /* no room for the scale between the slot and the screen */
+    .small { bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); }
   }
 </style>
 </head>
