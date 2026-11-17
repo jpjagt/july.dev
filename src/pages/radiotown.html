@@ -57,7 +57,7 @@
   .hint { display: none; }
   @media (min-width: 900px) and (pointer: fine) {
     .hint { display: block; position: absolute; left: calc(100% + 40px); top: 50%; transform: translateY(-50%); width: 210px;
-      font-size: 12px; line-height: 1.9; color: var(--dim); transition: opacity 1.5s; }
+      font-size: 12px; line-height: 1.9; color: var(--dim); transition: opacity .25s; }
     .hint b { color: var(--ink); font-weight: 700; margin-right: .7em; }
     .hint.gone { opacity: 0; }
   }
@@ -163,7 +163,6 @@
     <div><b>space</b>go in, go out, sit</div>
     <div><b>shift</b>sprint</div>
     <div><b>M</b>mute</div>
-    <div><b>1 2</b>street, town</div>
   </aside>
 </main>
 
@@ -179,7 +178,7 @@
       <li><span>Go in, go out</span><b>A · space</b></li>
       <li><span>Sit, stand up</span><b>A at a seat</b></li>
       <li><span>Sprint</span><b>hold B · shift</b></li>
-      <li><span>Street or town</span><b>top switch · 1, 2</b></li>
+      <li><span>Street or town</span><b>top switch</b></li>
       <li><span>Mute</span><b>speaker · M</b></li>
       <li id="volhelp"><span>Volume</span><b>slider on the right edge</b></li>
     </ul>
@@ -275,6 +274,8 @@
   }
   const SIT = HEAD_TOP.concat(HEAD.d, ['..#xxxxxx#..', '.#o#xxxx#o#.', '.##xxxxxx##.', '.#oo####oo#.', '.####..####.']);
   SIT.forEach((r) => { if (r.length !== 12) throw new Error('sit row "' + r + '"'); });
+  const SIT_SIDE = HEAD_TOP.concat(HEAD.r, ['...#xxxx#...', '...#xxoo#...', '...#xxxx####', '...###ooooo#', '........#o#.', '........###.']);
+  SIT_SIDE.forEach((r) => { if (r.length !== 12) throw new Error('side sit row "' + r + '"'); });
   const CHAR = {
     d: LEGS.front.map((l) => build(HEAD.d, BODY_FRONT, l)),
     u: LEGS.front.map((l) => build(HEAD.u, BODY_FRONT, l)),
@@ -484,15 +485,17 @@
     const set = c.dir === 'l' ? CHAR.r : CHAR[c.dir || 'd'];
     const n = set.length, beat = (t / (c.run ? 90 : 160)) | 0;
     const f = c.moving ? (n === 2 ? beat % 2 : 1 + beat % 2) : 0;
-    const rows = c.sit ? SIT : set[f], flip = !c.sit && c.dir === 'l';
+    const rows = c.sit === 2 ? SIT_SIDE : c.sit ? SIT : set[f], flip = c.sit === 2 ? !!c.flip : !c.sit && c.dir === 'l';
     const map = { h: c.hair ? '#' : 'o', x: c.shirt ? '#' : 'o' };
     if (c.bob) { sprite(c.x, c.y + 8, rows.slice(8), flip, map); sprite(c.x, c.y + 1, rows.slice(0, 8), flip, map); }
     else sprite(c.x, c.y, rows, flip, map);
   }
   function tag(c) {
     if (!c.name) return;
-    const w = textW(c.name) + 2, x = c.x + 6 - (w >> 1);
-    rect(x, c.y - 8, w, 7, 0); text(x + 1, c.y - 7, c.name, 1);
+    const w = textW(c.name) + 2;
+    /* over the head; for someone sideways on a sofa, beside them on the room's side, so a row of sitters stays readable */
+    const x = c.sit === 2 ? (c.flip ? c.x - w - 1 : c.x + 13) : c.x + 6 - (w >> 1), y = c.sit === 2 ? c.y + 3 : c.y - 8;
+    rect(x, y, w, 7, 0); text(x + 1, y + 1, c.name, 1);
   }
 
   /* ---- worlds ---- */
@@ -606,7 +609,7 @@
 
   function create(mode, seed) {
     const world = mode === '1d' ? makeStreet() : makeTown();
-    const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, idle: 0, pulse: 0, woke: false, t: 0, acc: 0, last: null,
+    const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, idle: 0, pulse: 0, nod: [0, 0, 0], woke: false, t: 0, acc: 0, last: null,
       p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, hair: 1, shirt: 1, name: '' }, bots: [] };
     if (mode === '1d') { st.p.x = 28; st.p.y = doorSpot(world.houses[0]).y; }
     else st.p.x += 8; /* the middle of the avenue, NTS 1 and 2 either side, the fountain below */
@@ -654,7 +657,8 @@
     else { b.tx = b.path[0][0]; b.ty = b.path[0][1]; b.path.shift(); }
   }
 
-  /* sofas and armchairs are furniture: feet cannot go where they stand, along the wall */
+  /* sofas are furniture: feet cannot go where one stands */
+  function onSeating(lay, x, y) { return lay.blocks.some(([ax, ay, bx, by]) => x + 9 >= ax && x + 2 <= bx && y + 15 >= ay && y + 11 <= by); }
   function onSeating(lay, x, y) { return y + 15 < 50 && lay.blocks.some(([a, b]) => x + 9 > a && x + 2 < b); }
   function onSofa(x, y) { return x + 9 > 4 && x + 2 < 42 && y + 15 < 62; }
   /* who sits where: the listeners in this house take the seats in order, skipping yours */
@@ -681,14 +685,15 @@
     if (sy) p.dir = sy > 0 ? 'd' : 'u';
     if (sx) p.dir = sx > 0 ? 'r' : 'l';
     st.t += STEP_MS;
+    st.nod = [st.pulse > 0.45 ? 1 : 0, st.nod[0], st.nod[1]];   /* the kick now, a step ago, two steps ago: heads nod in three groups */
     if (st.inside >= 0) {
       p.run = false; /* no sprinting indoors */
       const lay = layout(st.inside);
       st.idle = p.moving ? 0 : st.idle + 1;
       if (st.seat >= 0) {
-        /* seated: the cross does nothing, A stands you up beside the seat */
+        /* seated: the cross does nothing, A stands you up where you stood before */
         p.moving = false; p.dir = 'd';
-        if (action) { const seat = lay.seats[st.seat]; st.seat = -1; p.x = seat[0]; p.y = Math.min(ROOM.maxY, Math.max(36, seat[1] + 10)); st.idle = 0; }
+        if (action) { st.seat = -1; p.x = st.from.x; p.y = st.from.y; p.dir = st.from.dir; st.idle = 0; }   /* back where you stood */
       } else {
         const nx = Math.max(ROOM.minX, Math.min(ROOM.maxX, p.x + sx * SPEED));
         const ny = Math.max(ROOM.minY, Math.min(ROOM.maxY, p.y + sy * SPEED));
@@ -698,11 +703,12 @@
         /* A sits you on the nearest free seat within reach */
         let seat = -1, best = 1e9;
         if (action) lay.seats.forEach((q, k) => {
-          const dx = Math.abs(p.x - q[0]), dy = two ? Math.abs(p.y - q[1]) : 0;
-          if (!taken.has(k) && dx <= 10 && dy <= 18 && dx + dy < best) { best = dx + dy; seat = k; }
+          /* a sofa seat is as near as you can get standing beside it, so its sideways gap does not count */
+          const dx = Math.max(0, Math.abs(p.x - q[0]) - (q[2] === 2 ? 14 : 0)), dy = two ? Math.abs(p.y - q[1]) : 0;
+          if (!taken.has(k) && dx <= 16 && dy <= 18 && dx + dy < best) { best = dx + dy; seat = k; }
         });
         const byDoor = p.y >= 84 && Math.abs(p.x + 6 - 64) <= 20;
-        if (seat >= 0) { st.seat = seat; st.idle = 0; p.moving = false; }
+        if (seat >= 0) { st.from = { x: p.x, y: p.y, dir: p.dir }; st.seat = seat; st.idle = 0; p.moving = false; }
         else if ((action && (!two || byDoor)) || (two && keys.down && p.y >= ROOM.maxY && byDoor)) {
           /* inside is a station, and the town's houses are not in station order */
           const d = doorSpot(st.world.houses.find((hs) => hs.i === st.inside));
@@ -759,7 +765,7 @@
       if (n.dist > 60) return;
       i = n.house.i;
     }
-    const s = STATIONS[i], n = st.bots.filter((b) => b.state === 'in' && b.house === i).length;
+    const s = STATIONS[i], n = st.bots.filter((b) => b.state === 'in' && b.house === i).length + (st.inside === i ? 1 : 0);
     let line = s.name + ' ' + s.city + ' ' + clock(s.off, utcMin);
     if (textW(line) > W - 16) line = s.name + ' ' + clock(s.off, utcMin);
     const put = (x, str) => {
@@ -838,35 +844,57 @@
     for (let v = 1; v < h; v += 2) { rect(x - 2, y + v, 2, 1, 1); rect(x + w, y + v, 2, 1, 1); }   /* the fringe */
   }
 
-  /* lamplight: full light near a lamp, easing off to a light dusk far from one */
-  function lamplight(lamps, grow) {
-    for (let y = 0; y < VIEW_H; y++) for (let x = 0; x < W; x++) {
-      if (fb[y * W + x]) continue;
-      let lit = 0.74;
-      for (const [lx, ly, r] of lamps) lit += Math.max(0, 1 - Math.hypot(x - lx, (y - ly) * 1.2) / (r + grow)) * 0.8;
-      if ((BAYER[(y & 7) * 8 + (x & 7)] + 0.5) / 64 > lit) fb[y * W + x] = 1;
+  /* the room's dusk. The pattern only depends on the room and on which of its two breaths it is
+   * in, so it is worked out once and kept. */
+  function lamplight(L, breath) {
+    if (!L.dusk[breath]) {
+      const m = L.dusk[breath] = new Uint8Array(W * VIEW_H);
+      for (let y = 0; y < VIEW_H; y++) for (let x = 0; x < W; x++) {
+        /* a cosy cave: the dusk gathers along the side walls and towards the door end, deepest in
+         * the corners; the lamps only push it back a little where they stand */
+        const side = Math.min(1, Math.min(x, W - 1 - x) / (42 + breath * 3)), foot = Math.min(1, (VIEW_H - 1 - y) / 36);
+        const open = side * (0.4 + 0.6 * foot), ease = open * open * (3 - 2 * open);
+        let lit = 0.6 + 0.4 * ease;
+        for (const [lx, ly, r] of L.lamps) lit += Math.max(0, 1 - Math.hypot(x - lx, (y - ly) * 1.2) / r) * 0.3;
+        if ((BAYER[(y & 7) * 8 + (x & 7)] + 0.5) / 64 > lit) m[y * W + x] = 1;
+      }
     }
+    const m = L.dusk[breath];
+    for (let k = 0; k < m.length; k++) if (m[k]) fb[k] = 1;
   }
 
   /* Every station has its own room, always the same one. The station's number picks where the
-   * booth stands (left, right, middle), so what leans on the wall beside it (a sofa, or an
-   * armchair either side), how many rugs lie over each other, how many cushions, where the
-   * lamps and the plant go. */
+   * booth stands (left, right, middle) and what hangs in the free bays of the back wall; which
+   * side wall the sofa is on and which of three sofas it is; how many rugs lie over each other;
+   * how many cushions. The stations that draw a crowd get a second, longer sofa opposite. The
+   * middle of the floor, the way in, and the corners by the door are kept clear. */
+  const CROWDED = ['NTS 1', 'NTS 2', 'Rinse', 'Kiosk', 'Refuge', 'dublab'];
   const LAYOUTS = {};
   function layout(i) {
     if (LAYOUTS[i]) return LAYOUTS[i];
-    const type = i % 3, bx = type === 0 ? 18 : type === 1 ? 58 : 38;
-    const L = { type, bx, sofas: [], chairs: [], seats: [], blocks: [], rugs: [], lamps: [[bx + 48, 18, 62], [64, 124, 36]],
-      pendant: -1, shelf: -1, poster: -1, floorLamp: false, table: type === 0 ? 12 : 114, plant: type === 0 ? 111 : 5 };
-    if (type === 0) { L.sofas.push(72); L.poster = 75; L.pendant = 98; }
-    else if (type === 1) { L.sofas.push(20); L.pendant = 28; L.shelf = 37; }
-    else { L.chairs.push(20, 92); L.shelf = 20; L.poster = 94; L.floorLamp = true; L.lamps.push([7, 52, 58]); }
+    const type = i % 3, bx = [20, 56, 38][type], big = CROWDED.includes(STATIONS[i].name);
+    const L = { type, bx, sofas: [], seats: [], blocks: [], rugs: [], lanterns: [], dusk: [null, null],
+      lamps: [[bx + 48, 18, 62], [64, 124, 36]], shelf: [89, 20, 20][type], poster: [-1, -1, 94][type], pendant: [80, 46, -1][type], table: -1, plant: -1 };
     if (L.pendant >= 0) L.lamps.push([L.pendant, 16, 60]);
-    L.lamps.push([L.table, 50, 56]);
-    for (const x of L.sofas) { L.seats.push([x + 6, 31, 0], [x + 18, 31, 0]); L.blocks.push([x, x + 36]); }
-    for (const x of L.chairs) { L.seats.push([x + 2, 31, 0]); L.blocks.push([x, x + 16]); }
-    const spots = [[[102, 70], [106, 94], [10, 94], [14, 76]], [[14, 70], [10, 94], [106, 94], [102, 76]], [[102, 74], [106, 96], [20, 96], [18, 72]]][type];
-    for (let k = 0; k < 2 + (i >> 1) % 3; k++) L.seats.push([spots[k][0], spots[k][1], 1]);   /* 1: a cushion on the floor */
+    const first = i % 2 ? 'r' : 'l', other = first === 'l' ? 'r' : 'l';
+    L.sofas.push({ side: first, n: big ? 3 : 2, design: i % 3 });
+    if (big) L.sofas.push({ side: other, n: 2, design: (i + 1) % 3 });
+    for (const sf of L.sofas) {
+      sf.y = sf.n === 3 ? 42 : 44; sf.h = 12 + sf.n * 16;
+      const left = sf.side === 'l';
+      L.blocks.push(left ? [0, sf.y, 17, sf.y + sf.h] : [110, sf.y, 127, sf.y + sf.h]);
+      for (let k = 0; k < sf.n; k++) L.seats.push([left ? 3 : 113, sf.y + 4 + k * 16, 2, left ? 0 : 1]);   /* 2: sideways on a sofa */
+      if (sf.n === 2) {            /* a paper lantern on the floor at the foot of a short sofa */
+        const lx = left ? 8 : 119, ly = sf.y + sf.h + 3;
+        L.lanterns.push([lx, ly]); L.lamps.push([lx, ly + 3, 46]);
+      }
+    }
+    if (!big) {                    /* the wall without a sofa: a side table with a lamp, a plant in the corner */
+      L.table = other === 'l' ? 12 : 114; L.plant = other === 'l' ? 5 : 111;
+      L.lamps.push([L.table, 50, 56]);
+    }
+    const spots = [[22, 74], [94, 74], [30, 98], [86, 98]];
+    for (let k = 0; k < (big ? 4 : 2 + (i >> 1) % 2); k++) { const q = spots[(k + i) % 4]; L.seats.push([q[0], q[1], 1, 0]); }   /* 1: a cushion on the floor */
     const n = [1, 2, 3, 2, 1, 3, 2, 1][i % 8];   /* how many rugs lie over each other */
     L.rugs.push([i % 4, 36, 62, 56, 36]);
     if (n > 1) L.rugs.push([SMALL_RUGS[i % 3], 22, 78, 34, 22]);
@@ -874,9 +902,35 @@
     return (LAYOUTS[i] = L);
   }
 
+  /* a sofa with its back to a side wall, seen from above and in front: the back along the wall,
+   * the seats towards the room. Drawn for the left wall and mirrored for the right. */
+  function sofa(sf) {
+    const y = sf.y, h = sf.h, left = sf.side === 'l';
+    const R = (x, yy, w, hh, c) => rect(left ? x : W - x - w, yy, w, hh, c);
+    const B = (x, yy, w, hh) => { R(x, yy, w, hh, 1); R(x + 1, yy + 1, w - 2, hh - 2, 0); };
+    if (sf.design === 2) {
+      /* a daybed: no arms, a striped mattress, a pillow at each end */
+      B(0, y, 5, h); B(4, y + 1, 14, h - 2);
+      for (let x = 7; x < 16; x += 3) R(x, y + 2, 1, h - 4, 1);
+      B(5, y + 2, 11, 8); B(5, y + h - 10, 11, 8);
+      return;
+    }
+    B(0, y, 6, h);                                         /* the back */
+    B(0, y, 18, 7); B(0, y + h - 7, 18, 7);                /* the arms */
+    for (let k = 0; k < sf.n; k++) B(5, y + 6 + k * 16, 13, 17 - (k === sf.n - 1 ? 1 : 0));   /* a cushion a seat */
+    if (sf.design === 1) {
+      /* buttoned: a row of studs down the back, one in each cushion, the corners rounded */
+      for (let yy = y + 9; yy < y + h - 8; yy += 5) R(2, yy, 1, 1, 1);
+      for (let k = 0; k < sf.n; k++) R(11, y + 14 + k * 16, 1, 1, 1);
+      R(0, y, 1, 1, 0); R(17, y, 1, 1, 0); R(0, y + h - 1, 1, 1, 0); R(17, y + h - 1, 1, 1, 0);
+    } else {
+      R(18, y + 2, 1, h - 4, 1);                           /* a plain one: a shadow line under the front */
+    }
+  }
+
   function room(st, t) {
     cx = cy = 0;
-    const i = st.inside, name = STATIONS[i].name, kick = st.pulse > 0.45 ? 1 : 0, L = layout(i), bx = L.bx;
+    const i = st.inside, name = STATIONS[i].name, kick = st.nod[0], L = layout(i), bx = L.bx;
     /* wall: a picture rail and a skirting board */
     for (let x = 0; x < W; x += 2) px(x, 4, 1);
     rect(0, 30, W, 2, 1);
@@ -886,13 +940,13 @@
       for (let x = 12 + (r % 2) * 22; x < W; x += 44) rect(x, y + 1, 1, 10, 1);
     }
     /* the light falls on the bare room: what stands in it is drawn after, crisp. It breathes in
-     * two steps, like the smoke and the water, and jumps a little with the kick. */
-    lamplight(L.lamps, (((t / 700) | 0) % 2) * 4 + kick * 2);
+     * two steps, slowly, on its own clock: not with the music. */
+    lamplight(L, ((t / 1300) | 0) % 2);
     /* speakers: the cones move with the kick */
     for (const x of [2, 110]) {
       rect(x, 8, 16, 28, 1); ring(x + 8, 27 + kick, 5, 0); disc(x + 8, 27 + kick, 1, 0); ring(x + 8, 15, 2, 0); px(x + 8, 15, 0);
     }
-    /* on the wall: record shelves, a poster, a lamp hanging over the sofa */
+    /* on the back wall: record shelves, a poster, a hanging lamp */
     if (L.shelf >= 0) for (const y of [13, 23]) {
       const x = L.shelf;
       rect(x, y, 17, 1, 1); px(x, y + 1, 1); px(x + 16, y + 1, 1);
@@ -914,37 +968,24 @@
     rect(bx + 20, 24, 9, 7, 1); for (const [a, b] of [[22, 26], [24, 26], [26, 26], [22, 29], [26, 29]]) px(bx + a, b, 0);
     rect(bx + 48, 16, 1, 7, 1); rect(bx + 46, 23, 5, 1, 1); rect(bx + 46, 12, 5, 3, 1); rect(bx + 45, 15, 7, 1, 1);
     /* a round side table on one foot, with a lamp */
-    {
+    if (L.table >= 0) {
       const x = L.table;
       oval(x, 58, 7, 2, 1); oval(x, 57, 6, 1, 0); rect(x, 60, 1, 6, 1); rect(x - 3, 66, 7, 1, 1);
       rect(x, 51, 1, 5, 1); for (let j = 0; j < 5; j++) rect(x - 2 - (j >> 1), 46 + j, 5 + 2 * (j >> 1), 1, 1);
       rect(x - 1, 48, 3, 2, 0);
     }
-    /* a standing lamp at the side wall, where the booth is in the middle */
-    if (L.floorLamp) {
-      rect(4, 76, 7, 2, 1); rect(7, 54, 1, 22, 1);
-      for (let j = 0; j < 8; j++) rect(5 - (j >> 2), 46 + j, 5 + 2 * (j >> 2), 1, 1);
-      rect(6, 48, 3, 5, 0);
-    }
-    /* the rugs, one over another */
+    /* the rugs, one over another; the cushions on the floor */
     for (const [kind, x, y, w, h] of L.rugs) rug(kind, x, y, w, h);
-    /* seating: floor cushions; a sofa or armchairs with their backs to the wall */
-    for (const [sx, sy, cushion] of L.seats) {
-      if (!cushion) continue;
+    for (const [sx, sy, kind] of L.seats) {
+      if (kind !== 1) continue;
       oval(sx + 6, sy + 13, 8, 4, 1); oval(sx + 6, sy + 12, 7, 3, 0);
       px(sx + 6, sy + 12, 1); px(sx + 1, sy + 13, 1); px(sx + 11, sy + 13, 1);
     }
-    for (const x of L.sofas) {
-      box(x, 26, 36, 12); px(x, 26, 0); px(x + 35, 26, 0); rect(x + 18, 28, 1, 9, 1);
-      box(x, 32, 6, 16); box(x + 30, 32, 6, 16);
-      box(x + 5, 37, 14, 9); box(x + 18, 37, 13, 9); rect(x + 5, 46, 26, 2, 1);
-    }
-    for (const x of L.chairs) {
-      box(x, 26, 16, 12); px(x, 26, 0); px(x + 15, 26, 0);
-      box(x, 32, 4, 16); box(x + 12, 32, 4, 16); box(x + 3, 37, 10, 9); rect(x + 3, 46, 10, 2, 1);
-    }
-    /* a plant, the door mat */
-    {
+    /* the sofas along the side walls, a paper lantern at the foot of a short one */
+    for (const sf of L.sofas) sofa(sf);
+    for (const [x, y] of L.lanterns) { rect(x - 3, y + 1, 7, 7, 1); rect(x - 2, y, 5, 9, 1); rect(x - 2, y + 2, 5, 5, 0); px(x - 1, y + 4, 1); px(x + 1, y + 4, 1); }
+    /* a plant in a free corner, the door mat */
+    if (L.plant >= 0) {
       const x = L.plant;
       rect(x, 105, 9, 8, 1); rect(x + 1, 106, 7, 2, 0);
       for (const [a, b, rx, ry] of [[x - 2, 98, 3, 5], [x + 5, 93, 3, 6], [x + 11, 99, 3, 5]]) { oval(a, b, rx, ry, 1); oval(a, b, rx - 1, ry - 1, 0); rect(a, b - ry + 2, 1, ry * 2 - 2, 1); }
@@ -952,11 +993,9 @@
     }
     rect(52, 113, 24, 6, 1); for (let x = 54; x < 75; x += 4) rect(x, 114, 2, 4, 0);
     /* people: the listeners on their seats, and you */
-    const draw = sitters(st).map(([k, b]) => ({ x: L.seats[k][0], y: L.seats[k][1], sit: true, bob: kick, hair: b.hair, shirt: b.shirt, name: b.name }));
-    const me = st.seat >= 0
-      ? { x: L.seats[st.seat][0], y: L.seats[st.seat][1], sit: true, bob: kick, hair: st.p.hair, shirt: st.p.shirt, name: st.p.name }
-      : Object.assign({}, st.p, { bob: kick && !st.p.moving && st.idle > 54 });
-    draw.push(me);
+    const seated = (k, who) => ({ x: L.seats[k][0], y: L.seats[k][1], sit: L.seats[k][2], flip: L.seats[k][3], bob: st.nod[k % 3], hair: who.hair, shirt: who.shirt, name: who.name });
+    const draw = sitters(st).map(([k, b]) => seated(k, b));
+    draw.push(st.seat >= 0 ? seated(st.seat, st.p) : Object.assign({}, st.p, { bob: st.nod[1] && !st.p.moving && st.idle > 54 }));
     draw.sort((a, b) => a.y - b.y).forEach((c) => person(c, t));
     draw.forEach(tag);
   }
@@ -1124,8 +1163,6 @@ addEventListener('keydown', (e) => {
   wake();
   if (KEY[e.key]) { keys[KEY[e.key]] = true; if (e.key === 'Shift') btnB.classList.add('on'); show(); e.preventDefault(); }
   else if (e.key === ' ' || e.key === 'Enter') { if (!e.repeat) { action = true; btnA.classList.add('on'); } e.preventDefault(); }
-  else if (e.key === '1') setMode('1d');
-  else if (e.key === '2') setMode('2d');
   else if (e.key === 'm') setMuted(!muted);
 });
 addEventListener('keyup', (e) => {
@@ -1197,16 +1234,17 @@ function sound() {
 }
 /* The beat, for the room: a kick is the bass band jumping above its own recent average. With no
  * tap on the stream (played the plain way), a steady two a second stands in while it plays. */
-let bass = -100, lastBeat = 0, pulse = 0;
+const DOWN_MS = 190, BEAT_GAP_MS = 400;   /* a nod stays down this long, and is up at least as long before the next */
+let bass = -100, lastBeat = -1e9, pulse = 0;
 function beat(now) {
-  pulse *= 0.72;
+  pulse = now - lastBeat < DOWN_MS ? 1 : 0;
   const e = st.inside >= 0 ? playing.get(st.inside) : null;
   if (!e || e.gain < 0.5) return pulse;
   if (e.node && tap0) {
     tap0.getFloatFrequencyData(bins);                        /* decibels: a loud master does not clip them */
     let b = 0; for (let k = 1; k <= 4; k++) b += bins[k];   /* about 45 to 190 Hz */
     b = Math.max(-100, b / 4); bass += (b - bass) * 0.06;
-    if (b > bass + 4.5 && b > -65 && now - lastBeat > 270) { lastBeat = now; pulse = 1; }
+    if (b > bass + 4.5 && b > -65 && now - lastBeat > BEAT_GAP_MS) { lastBeat = now; pulse = 1; }
   } else if (!e.a.paused && e.a.readyState >= 3 && now - lastBeat > 500) { lastBeat = now; pulse = 1; }
   return pulse;
 }
