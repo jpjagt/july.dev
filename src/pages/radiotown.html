@@ -4,7 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>radiotown</title>
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAdklEQVR4nO3TMQrAIAxGYc9RvP81nDv0Tt3ERTBg0ub3wZtEwjck5X5ar9arN75HVgClBs1wkVBAOqCvoID0Qd5QQLlBs6HeAdIE7Vr2lSMApA+yLqZ1JqCzQLuOANC5oJWltv4BpA/yCJA+KDJAOqA/BCgd6AXmVvTTKAhs8wAAAABJRU5ErkJggg==">
+<meta name="description" content="listen to some tunes &amp; hang out">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="radiotown">
+<meta property="og:title" content="radiotown">
+<meta property="og:description" content="listen to some tunes &amp; hang out">
+<meta property="og:url" content="https://july.dev/radiotown">
+<meta property="og:image" content="https://july.dev/radiotown.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A pixel town seen from above: a character on a plaza between houses signed NTS 1, NTS 2, Kiosk and Rinse, with more radio stations along the street behind.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="radiotown">
+<meta name="twitter:description" content="listen to some tunes &amp; hang out">
+<meta name="twitter:image" content="https://july.dev/radiotown.png">
+<meta name="theme-color" content="#171715">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAcUlEQVR4nO3TuwnAMAxFUc8RvP8arl1kJy+QgASSP88XbinEKaTS37ZVZbkAUBSo1uczQICsoFVQQPqgbCigs0F/S7MDpAmKOnbLEwDSB3kP07sT0F2gqCcAdC/IctTeGUD6oIwA6YNmBkgHtEOAjgMNhSgVEsnkizgAAAAASUVORK5CYII=">
 <style>
   :root { --bg: #e9e6df; --ink: #1c1c1a; --case: #d8d3c6; --case-lo: #c4bfb1; --lcd: #c9cdbf; --dim: #77736a;
     --key: #3a3a36; --key-lo: #262623; --key-edge: #0f0f0e; --legend: #c9cdbf; --print: #8a8578; }
@@ -526,10 +541,11 @@
   }
 
   function makeStreet() {
-    const n = STATIONS.length, w = 2 + n * 5, h = 8, g = [];
+    /* the houses stand wall to wall: a door every three tiles, so a short walk from one station to the next */
+    const n = STATIONS.length, w = 4 + n * 3, h = 8, g = [];
     for (let ty = 0; ty < h; ty++) for (let tx = 0; tx < w; tx++) g.push(ty === 5 ? '=' : ty === 6 ? 'r' : '.');
-    const houses = STATIONS.map((_, i) => ({ i, tx: 2 + i * 5, ty: 2, face: 's' })), objs = [];
-    for (let i = 0; i < n; i += 2) objs.push({ k: 'tree', tx: 6 + i * 5, ty: 3 });
+    const houses = STATIONS.map((_, i) => ({ i, tx: 2 + i * 3, ty: 2, face: 's' })), objs = [];
+    objs.push({ k: 'tree', tx: 0, ty: 3 }, { k: 'tree', tx: w - 1, ty: 3 });
     return finish({ mode: '1d', w, h, g, houses, objs, spawn: [1, 5] });
   }
 
@@ -610,7 +626,8 @@
   function create(mode, seed) {
     const world = mode === '1d' ? makeStreet() : makeTown();
     const st = { mode, world, seed: seed || 7, inside: -1, seat: -1, idle: 0, pulse: 0, nod: [0, 0, 0], woke: false, t: 0, acc: 0, last: null,
-      p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, hair: 1, shirt: 1, name: '' }, bots: [] };
+      p: { x: world.spawn[0] * T + 2, y: world.spawn[1] * T - 2, dir: 'd', moving: false, run: false, hair: 1, shirt: 1, name: '' }, bots: [],
+      others: [], counts: null };   /* multiplayer (net.js): the other players to draw {name, hair, shirt, x, y, dir, moving, run, inside, seat}, and listeners per station */
     if (mode === '1d') { st.p.x = 28; st.p.y = doorSpot(world.houses[0]).y; }
     else st.p.x += 8; /* the middle of the avenue, NTS 1 and 2 either side, the fountain below */
     BOTS.forEach(([name, hair, shirt], k) => {
@@ -659,8 +676,6 @@
 
   /* sofas are furniture: feet cannot go where one stands */
   function onSeating(lay, x, y) { return lay.blocks.some(([ax, ay, bx, by]) => x + 9 >= ax && x + 2 <= bx && y + 15 >= ay && y + 11 <= by); }
-  function onSeating(lay, x, y) { return y + 15 < 50 && lay.blocks.some(([a, b]) => x + 9 > a && x + 2 < b); }
-  function onSofa(x, y) { return x + 9 > 4 && x + 2 < 42 && y + 15 < 62; }
   /* who sits where: the listeners in this house take the seats in order, skipping yours */
   function sitters(st) {
     const out = [];
@@ -671,6 +686,7 @@
       if (k >= layout(st.inside).seats.length) break;
       out.push([k++, b]);
     }
+    for (const o of st.others) if (o.inside === st.inside && o.seat >= 0 && o.seat < layout(st.inside).seats.length) out.push([o.seat, o]);   /* real players: the server gave them their seats */
     return out;
   }
 
@@ -704,7 +720,7 @@
         let seat = -1, best = 1e9;
         if (action) lay.seats.forEach((q, k) => {
           /* a sofa seat is as near as you can get standing beside it, so its sideways gap does not count */
-          const dx = Math.max(0, Math.abs(p.x - q[0]) - (q[2] === 2 ? 14 : 0)), dy = two ? Math.abs(p.y - q[1]) : 0;
+          const dx = Math.max(0, Math.abs(p.x - q[0]) - (q[2] === 2 ? 18 : 0)), dy = two ? Math.abs(p.y - q[1]) : 0;
           if (!taken.has(k) && dx <= 16 && dy <= 18 && dx + dy < best) { best = dx + dy; seat = k; }
         });
         const byDoor = p.y >= 84 && Math.abs(p.x + 6 - 64) <= 20;
@@ -765,7 +781,7 @@
       if (n.dist > 60) return;
       i = n.house.i;
     }
-    const s = STATIONS[i], n = st.bots.filter((b) => b.state === 'in' && b.house === i).length + (st.inside === i ? 1 : 0);
+    const s = STATIONS[i], n = st.counts ? st.counts[i] || 0 : st.bots.filter((b) => b.state === 'in' && b.house === i).length + (st.inside === i ? 1 : 0);
     let line = s.name + ' ' + s.city + ' ' + clock(s.off, utcMin);
     if (textW(line) > W - 16) line = s.name + ' ' + clock(s.off, utcMin);
     const put = (x, str) => {
@@ -882,18 +898,18 @@
     for (const sf of L.sofas) {
       sf.y = sf.n === 3 ? 42 : 44; sf.h = 12 + sf.n * 16;
       const left = sf.side === 'l';
-      L.blocks.push(left ? [0, sf.y, 17, sf.y + sf.h] : [110, sf.y, 127, sf.y + sf.h]);
-      for (let k = 0; k < sf.n; k++) L.seats.push([left ? 3 : 113, sf.y + 4 + k * 16, 2, left ? 0 : 1]);   /* 2: sideways on a sofa */
-      if (sf.n === 2) {            /* a paper lantern on the floor at the foot of a short sofa */
-        const lx = left ? 8 : 119, ly = sf.y + sf.h + 3;
-        L.lanterns.push([lx, ly]); L.lamps.push([lx, ly + 3, 46]);
+      L.blocks.push(left ? [0, sf.y, 23, sf.y + sf.h] : [104, sf.y, 127, sf.y + sf.h]);
+      for (let k = 0; k < sf.n; k++) L.seats.push([left ? 6 : 110, sf.y + 1 + k * 16, 2, left ? 0 : 1]);   /* 2: sideways on a sofa */
+      if (sf.n === 2) {            /* a standing lamp at the foot of a short sofa */
+        const lx = left ? 10 : 117, ly = sf.y + sf.h + 22;
+        L.lanterns.push([lx, ly]); L.lamps.push([lx, ly - 16, 50]); L.blocks.push([lx - 4, ly - 3, lx + 4, ly + 1]);
       }
     }
     if (!big) {                    /* the wall without a sofa: a side table with a lamp, a plant in the corner */
       L.table = other === 'l' ? 12 : 114; L.plant = other === 'l' ? 5 : 111;
-      L.lamps.push([L.table, 50, 56]);
+      L.lamps.push([L.table, 48, 56]); L.blocks.push([L.table - 7, 56, L.table + 7, 68]);
     }
-    const spots = [[22, 74], [94, 74], [30, 98], [86, 98]];
+    const spots = [[28, 74], [88, 74], [32, 98], [84, 98]];
     for (let k = 0; k < (big ? 4 : 2 + (i >> 1) % 2); k++) { const q = spots[(k + i) % 4]; L.seats.push([q[0], q[1], 1, 0]); }   /* 1: a cushion on the floor */
     const n = [1, 2, 3, 2, 1, 3, 2, 1][i % 8];   /* how many rugs lie over each other */
     L.rugs.push([i % 4, 36, 62, 56, 36]);
@@ -902,30 +918,56 @@
     return (LAYOUTS[i] = L);
   }
 
-  /* a sofa with its back to a side wall, seen from above and in front: the back along the wall,
-   * the seats towards the room. Drawn for the left wall and mirrored for the right. */
+  /* A couch with its back to a side wall. Written for the left wall and mirrored for the right.
+   * B is a top (a face you look down on), F a south face (upright, in shade). Its footprint
+   * on the floor is 24 deep from the wall and sf.h long, starting at sf.y. */
   function sofa(sf) {
     const y = sf.y, h = sf.h, left = sf.side === 'l';
     const R = (x, yy, w, hh, c) => rect(left ? x : W - x - w, yy, w, hh, c);
     const B = (x, yy, w, hh) => { R(x, yy, w, hh, 1); R(x + 1, yy + 1, w - 2, hh - 2, 0); };
-    if (sf.design === 2) {
-      /* a daybed: no arms, a striped mattress, a pillow at each end */
-      B(0, y, 5, h); B(4, y + 1, 14, h - 2);
-      for (let x = 7; x < 16; x += 3) R(x, y + 2, 1, h - 4, 1);
-      B(5, y + 2, 11, 8); B(5, y + h - 10, 11, 8);
-      return;
-    }
-    B(0, y, 6, h);                                         /* the back */
-    B(0, y, 18, 7); B(0, y + h - 7, 18, 7);                /* the arms */
-    for (let k = 0; k < sf.n; k++) B(5, y + 6 + k * 16, 13, 17 - (k === sf.n - 1 ? 1 : 0));   /* a cushion a seat */
-    if (sf.design === 1) {
-      /* buttoned: a row of studs down the back, one in each cushion, the corners rounded */
-      for (let yy = y + 9; yy < y + h - 8; yy += 5) R(2, yy, 1, 1, 1);
-      for (let k = 0; k < sf.n; k++) R(11, y + 14 + k * 16, 1, 1, 1);
-      R(0, y, 1, 1, 0); R(17, y, 1, 1, 0); R(0, y + h - 1, 1, 1, 0); R(17, y + h - 1, 1, 1, 0);
+    const F = (x, yy, w, hh) => R(x, yy, w, hh, 1);
+    const O = (x, yy, rx, ry) => { oval(left ? x : W - 1 - x, yy, rx, ry, 1); oval(left ? x : W - 1 - x, yy, rx - 1, ry - 1, 0); };
+    if (sf.design === 0) {
+      /* a square modern sofa: a high back, broad flat arms, a loose cushion a seat */
+      B(0, y - 9, 7, h);                                              /* the back's top, nine up */
+      for (let k = 0; k < sf.n; k++) B(6, y + 3 + k * 16, 18, 17);    /* the seats, three up */
+      B(6, y - 6, 18, 7); F(6, y, 18, 4);                             /* the far arm: its top, and what shows of its side above the seat */
+      B(6, y + h - 12, 18, 7); F(6, y + h - 6, 18, 7);                /* the near arm: top and side */
+      F(0, y + h - 10, 7, 11);                                        /* the back's end */
+    } else if (sf.design === 1) {
+      /* a chesterfield: rolled arms, a buttoned back and a single buttoned seat, on turned feet */
+      B(0, y - 9, 7, h);
+      for (let yy = y - 6; yy < y + h - 12; yy += 4) R(2 + ((yy >> 2) & 1) * 2, yy, 1, 1, 1);
+      B(6, y + 3, 18, h - 12);
+      for (let yy = y + 9, r = 0; yy < y + h - 14; yy += 6, r++) for (let x = 9 + (r & 1) * 3; x < 22; x += 6) R(x, yy, 1, 1, 1);
+      O(14, y - 2, 10, 4); F(6, y + 2, 18, 2);
+      O(14, y + h - 9, 10, 4); F(6, y + h - 7, 18, 7); R(6, y + h - 1, 1, 1, 0); R(23, y + h - 1, 1, 1, 0);
+      R(7, y + h, 2, 2, 1); R(21, y + h, 2, 2, 1);
+      F(0, y + h - 10, 7, 11);
     } else {
-      R(18, y + 2, 1, h - 4, 1);                           /* a plain one: a shadow line under the front */
+      /* floor seating, a majlis: a low mattress with a woven edge, cushions stood against the
+       * wall, a round bolster at each end */
+      B(5, y, 19, h); F(5, y + h - 1, 19, 3);
+      for (let yy = y + 3; yy < y + h - 3; yy += 4) { R(21, yy, 1, 1, 1); R(22, yy + 2, 1, 1, 1); }
+      for (let k = 0; k * 15 < h - 6; k++) {
+        const top = y - 6 + k * 15, tall = Math.min(15, y + h - 8 - top);
+        if (tall < 8) break;
+        B(0, top, 7, tall); R(0, top, 1, 1, 0); R(6, top, 1, 1, 0);
+        for (let j = 3; j < tall - 2; j += 3) R(2 + (j % 2), top + j, 3, 1, 1);
+      }
+      F(0, y + h - 8, 7, 9);
+      O(14, y + 4, 8, 3); R(9, y + 4, 1, 1, 1); R(19, y + 4, 1, 1, 1);
+      O(14, y + h - 6, 8, 3); R(9, y + h - 6, 1, 1, 1); R(19, y + h - 6, 1, 1, 1);
     }
+  }
+
+  /* a standing lamp: a round foot on the floor, a pole, a drum shade */
+  function standingLamp(x, y) {
+    oval(x, y, 4, 2, 1); oval(x, y - 1, 3, 1, 0);
+    rect(x, y - 13, 1, 12, 1);
+    rect(x - 5, y - 20, 11, 8, 1); px(x - 5, y - 20, 0); px(x + 5, y - 20, 0);
+    rect(x - 4, y - 19, 9, 2, 0);                              /* you look down into the top of the shade */
+    oval(x, y - 12, 5, 1, 1); rect(x - 3, y - 12, 7, 1, 0);    /* and see the lit rim underneath */
   }
 
   function room(st, t) {
@@ -967,12 +1009,15 @@
     for (const x of [bx + 11, bx + 37]) { ring(x, 27, 4, 1); px(x, 27, 1); rect(x + 5, 24, 1, 3, 1); px(x + 4, 27, 1); }
     rect(bx + 20, 24, 9, 7, 1); for (const [a, b] of [[22, 26], [24, 26], [26, 26], [22, 29], [26, 29]]) px(bx + a, b, 0);
     rect(bx + 48, 16, 1, 7, 1); rect(bx + 46, 23, 5, 1, 1); rect(bx + 46, 12, 5, 3, 1); rect(bx + 45, 15, 7, 1, 1);
-    /* a round side table on one foot, with a lamp */
+    /* a round side table: the top seen from above, its rim, four legs (the far pair shorter), and
+     * a lamp whose foot stands on the top */
     if (L.table >= 0) {
       const x = L.table;
-      oval(x, 58, 7, 2, 1); oval(x, 57, 6, 1, 0); rect(x, 60, 1, 6, 1); rect(x - 3, 66, 7, 1, 1);
-      rect(x, 51, 1, 5, 1); for (let j = 0; j < 5; j++) rect(x - 2 - (j >> 1), 46 + j, 5 + 2 * (j >> 1), 1, 1);
-      rect(x - 1, 48, 3, 2, 0);
+      rect(x - 4, 60, 1, 5, 1); rect(x + 4, 60, 1, 5, 1); rect(x - 6, 60, 1, 9, 1); rect(x + 6, 60, 1, 9, 1);
+      oval(x, 59, 8, 3, 1); oval(x, 58, 8, 3, 1); oval(x, 58, 7, 2, 0);
+      oval(x, 57, 2, 1, 1); rect(x, 49, 1, 8, 1);
+      for (let j = 0; j < 6; j++) rect(x - 2 - (j >> 1), 43 + j, 5 + 2 * (j >> 1), 1, 1);
+      rect(x - 1, 45, 3, 2, 0); rect(x - 3, 48, 7, 1, 0); px(x - 4, 48, 1); px(x + 4, 48, 1); rect(x - 3, 49, 7, 1, 1);
     }
     /* the rugs, one over another; the cushions on the floor */
     for (const [kind, x, y, w, h] of L.rugs) rug(kind, x, y, w, h);
@@ -981,9 +1026,9 @@
       oval(sx + 6, sy + 13, 8, 4, 1); oval(sx + 6, sy + 12, 7, 3, 0);
       px(sx + 6, sy + 12, 1); px(sx + 1, sy + 13, 1); px(sx + 11, sy + 13, 1);
     }
-    /* the sofas along the side walls, a paper lantern at the foot of a short one */
+    /* the couches along the side walls, a standing lamp at the foot of a short one */
     for (const sf of L.sofas) sofa(sf);
-    for (const [x, y] of L.lanterns) { rect(x - 3, y + 1, 7, 7, 1); rect(x - 2, y, 5, 9, 1); rect(x - 2, y + 2, 5, 5, 0); px(x - 1, y + 4, 1); px(x + 1, y + 4, 1); }
+    for (const [x, y] of L.lanterns) standingLamp(x, y);
     /* a plant in a free corner, the door mat */
     if (L.plant >= 0) {
       const x = L.plant;
@@ -995,6 +1040,7 @@
     /* people: the listeners on their seats, and you */
     const seated = (k, who) => ({ x: L.seats[k][0], y: L.seats[k][1], sit: L.seats[k][2], flip: L.seats[k][3], bob: st.nod[k % 3], hair: who.hair, shirt: who.shirt, name: who.name });
     const draw = sitters(st).map(([k, b]) => seated(k, b));
+    for (const o of st.others) if (o.inside === i && o.seat < 0) draw.push(o);   /* real players on their feet in here */
     draw.push(st.seat >= 0 ? seated(st.seat, st.p) : Object.assign({}, st.p, { bob: st.nod[1] && !st.p.moving && st.idle > 54 }));
     draw.sort((a, b) => a.y - b.y).forEach((c) => person(c, t));
     draw.forEach(tag);
@@ -1007,6 +1053,7 @@
     const w = st.world, p = st.p;
     cx = Math.max(0, Math.min(w.w * T - W, p.x + 6 - W / 2));
     cy = Math.max(0, Math.min(w.h * T - VIEW_H, p.y + 8 - 60));
+    if (st.cam) { cx = st.cam.x; cy = st.cam.y; }   /* a fixed view, for pictures of the town */
     const tx0 = (cx / T) | 0, ty0 = (cy / T) | 0;
     for (let ty = ty0; ty <= ty0 + 8 && ty < w.h; ty++) for (let tx = tx0; tx <= tx0 + 8 && tx < w.w; tx++) ground(w, tx, ty, t);
     if (w.mode === '1d') rect(0, 96, w.w * T, 1, 1);
@@ -1023,7 +1070,7 @@
       else items.push({ b: y + T * SOLID[o.k][1], f: () => DRAW[o.k](x, y, t) });
     }
     for (const hs of w.houses) if (near(hs.tx * T, hs.ty * T)) items.push({ b: (hs.ty + 3) * T, f: () => house(hs, t, door === hs) });
-    const chars = st.bots.filter((b) => b.state !== 'in').concat([p]);
+    const chars = st.bots.filter((b) => b.state !== 'in').concat(st.others.filter((o) => o.inside < 0), [p]);
     for (const c of chars) items.push({ b: c.y + 16, f: () => person(c, t) });
     items.sort((a, b) => a.b - b.b).forEach((it) => it.f());
     chars.forEach(tag);
@@ -1038,7 +1085,8 @@
     lines.forEach((s, k) => text((W - textW(s)) >> 1, y + 3 + k * 7, s, 1));
   }
 
-  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, layout, sound, atDoor, nearest, doorSpot };
+  const api = { W, H, T, STEP_MS, STATIONS, FONT, create, step, advance, render, notice, layout, sound, atDoor, nearest, doorSpot,
+    ROOM, SPEED, SPRINT, feetBlocked, onSeating: (lay, x, y) => onSeating(lay, x, y) };   /* the last row: what the multiplayer server checks moves against */
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Street = api;
 })(typeof self !== 'undefined' ? self : this);
 </script>
@@ -1307,6 +1355,9 @@ function draw() {
 function tick(now) {
   st.pulse = beat(now);
   $('hint').classList.toggle('gone', st.woke);
+  /* the tab says where you are listening */
+  const title = st.inside >= 0 ? S.STATIONS[st.inside].name + ' on radiotown' : 'radiotown';
+  if (document.title !== title) document.title = title;
   if (S.advance(st, now, keys, action)) { action = false; sound(); draw(); }
   requestAnimationFrame(tick);
 }
