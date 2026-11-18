@@ -1539,11 +1539,16 @@
  * decoder delay), so each piece is decoded with the last quarter second of the one before it in
  * front. The same audio then exists twice, at the end of one buffer and near the start of the
  * next; the two are lined up to the sample by correlation and cross-faded over 5 ms. That does
- * not depend on how many samples a browser's decoder adds or drops at the ends.
+ * not depend on how many samples a browser's decoder adds or drops at the ends. Measured in
+ * Chrome and in WebKit on a Mac (2026-11-17, replayed recordings against the same bytes decoded
+ * in one go): MP3 joins are identical to the sample; AAC within -44 dB of the level at the join.
  *
  * Lock screen. Web Audio stops when an iOS page goes to the background; an <audio> element plays
  * on. So inside a house the station is handed to a plain element (started muted, switched to when
- * it really plays) and handed back on the way out. See entry() below.
+ * it really plays) and handed back on the way out. See open() below. None of this has run on an
+ * iPhone yet.
+ *
+ * Tests: test/stream.test.js (node --test) for the parsers, the chunker and the join search.
  *
  * Stream.enable(canVolume) says whether this path is on (?decode=1 forces it, ?decode=0 turns it
  * off); Stream.open(...) gives the page an entry for its `playing` map; Stream.prime() is called
@@ -1737,6 +1742,7 @@
   /* ================= the browser part ================= */
   if (typeof document !== 'undefined') {
     const START = 0.6;     /* seconds of stream in hand before the first piece */
+    const SLOW = 1.5;      /* the same for a server that sends no burst on connecting: nothing else will be in hand */
     const CHUNK = 1.0;     /* seconds of new audio per piece */
     const AHEAD = 1.6;     /* decode the next piece when less than this is scheduled */
     const LOW = 0.45, SHORT = 0.3;   /* nearly dry: a short piece will do */
@@ -1776,16 +1782,17 @@
         minCorr: 1, errSum: 0, errMax: 0, offMin: 1e9, offMax: -1e9, underruns: 0, decodeFails: 0, reconnects: 0, dropped: 0, decodeMs: 0, lost: 0 };
       let on = false, ac = null, run = 0, busy = false, failed = false;
       let prev = null;                 /* the last piece placed: { buf, cut, n (clock sample of cut), total (seconds of stream in buf) } */
-      let need = START, hint = 0, fails = 0, firstAt = 0, got = false;
+      let need = START, hint = 0, fails = 0, firstAt = 0, got = false, began = 0;
 
       /* Where the stream's rate is not the output's, the decoder also resamples, and two pieces line
        * up to the sample only if they start a whole number of output samples apart: that many
-       * frames (49 MP3 frames from 44.1 to 48 kHz) is the chunker's step. Where it would be too
-       * many (AAC from 44.1 to 48 kHz: 147), 1: a join is then up to half a sample out. */
+       * frames is the chunker's step: 49 MP3 frames from 44.1 to 48 kHz (1.3 s), 147 AAC frames
+       * (3.4 s, so those pieces are long), 5 from 48 to 44.1 kHz. Beyond that, 1: a join is then
+       * up to half a sample out, which the cross-fade covers. */
       function whole(spf, rate) {
         const gcd = (a, b) => b ? gcd(b, a % b) : a;
         const b = rate / gcd(rate, spf * ctx.sampleRate);
-        return b * spf / rate <= 2.2 ? b : 1;
+        return b * spf / rate <= 3.5 ? b : 1;
       }
 
       function fail(why) {
@@ -1821,6 +1828,7 @@
               if (fr.dead) return fail('format: ' + fr.why);
               if (out.length) {
                 if (!got) { stats.kind = fr.kind; stats.rate = fr.rate; stats.bitrate = fr.bitrate; }
+                if (!frames) began = performance.now();
                 if (!frames) ch.step = whole(Math.round(out[0].dur * fr.rate), fr.rate);
                 got = true; frames += out.length; stats.lost = fr.lost;
                 if (frames > 200) { wait = 1000; empty = 0; }
@@ -1896,6 +1904,7 @@
         }
         const ahead = prev ? prev.n / sr - now : 0;
         if (prev && ahead > AHEAD) return;
+        if (!prev && !stats.pieces && need === START && ch.held >= START && performance.now() - began > 350) need = SLOW;   /* it trickled in: no burst */
         const piece = !prev ? (ch.held >= need ? ch.take(0, CHUNK) : null)
           : ahead < LOW ? ch.take(SHORT, CHUNK) : ch.take(CHUNK, CHUNK, true);
         if (!piece) return;
@@ -2001,7 +2010,8 @@
           else if (!inside && phase === 'arming') { release(); phase = 'out'; }
           if (phase === 'arming' && playing()) toElement(muted);
           if (phase === 'in') {
-            el.a.muted = !!muted;
+            /* outside again while the decoded stream cannot take over (the context is not running): the element stays, but not at full loudness far from the door */
+            el.a.muted = !!muted || (!inside && !o.canVolume && gain < 0.12);
             if (o.canVolume) el.a.volume = Math.max(0, Math.min(1, gain * master));
             if (!document.hidden && !p.on && !p.failed) p.start();
             if (!inside && (p.audible || p.failed || el.a.paused)) {            /* out of the door, and the decoded stream is there to take over */
